@@ -1,0 +1,11 @@
+{
+  "condition": "stimulated",
+  "perturbations": [
+    {
+      "target": "LCK",
+      "strength": 1.0,
+      "mode": "observed"
+    }
+  ],
+  "interpretation": "Transcriptomic hypothesis; not a clinical efficacy estimate."
+}

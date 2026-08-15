@@ -1,0 +1,394 @@
+{
+  "evaluation": "independent-guide concordance",
+  "n_pairs": 64,
+  "median_pearson": 0.03988631010394359,
+  "mean_pearson": 0.04632175620876132,
+  "median_top200_de_pearson": 0.021433720334951827,
+  "mean_top200_de_pearson": 0.03892232663628056,
+  "pairs": [
+    {
+      "condition": "stimulated",
+      "target": "BACH2",
+      "guide_correlation": 0.04765280111072268,
+      "top200_de_correlation": -0.058280464132292854
+    },
+    {
+      "condition": "stimulated",
+      "target": "DHODH",
+      "guide_correlation": -0.05753821399184922,
+      "top200_de_correlation": -0.21772280973701663
+    },
+    {
+      "condition": "stimulated",
+      "target": "DOK2",
+      "guide_correlation": -0.028159543210106473,
+      "top200_de_correlation": 0.07202979849540252
+    },
+    {
+      "condition": "stimulated",
+      "target": "EGR1",
+      "guide_correlation": 0.178837716728813,
+      "top200_de_correlation": 0.3367539724068627
+    },
+    {
+      "condition": "stimulated",
+      "target": "EGR2",
+      "guide_correlation": 0.055838894508556294,
+      "top200_de_correlation": 0.1900626237212373
+    },
+    {
+      "condition": "stimulated",
+      "target": "EGR3",
+      "guide_correlation": 0.019200547064896052,
+      "top200_de_correlation": 0.017838779240221522
+    },
+    {
+      "condition": "stimulated",
+      "target": "EGR4",
+      "guide_correlation": 0.03938258436786457,
+      "top200_de_correlation": 0.13789536165107572
+    },
+    {
+      "condition": "stimulated",
+      "target": "ETS1",
+      "guide_correlation": 0.12922650213403716,
+      "top200_de_correlation": 0.2228963421690778
+    },
+    {
+      "condition": "stimulated",
+      "target": "FOS",
+      "guide_correlation": 0.058117507031969114,
+      "top200_de_correlation": -0.1603981548139749
+    },
+    {
+      "condition": "stimulated",
+      "target": "GATA3",
+      "guide_correlation": 0.08341648209192322,
+      "top200_de_correlation": 0.08439301796888797
+    },
+    {
+      "condition": "stimulated",
+      "target": "JUN",
+      "guide_correlation": 0.13851555663722534,
+      "top200_de_correlation": 0.15757870441244115
+    },
+    {
+      "condition": "stimulated",
+      "target": "JUNB",
+      "guide_correlation": 0.05825717793726624,
+      "top200_de_correlation": -0.03451013320973281
+    },
+    {
+      "condition": "stimulated",
+      "target": "JUND",
+      "guide_correlation": 0.026774320260129405,
+      "top200_de_correlation": 0.13587792416105207
+    },
+    {
+      "condition": "stimulated",
+      "target": "LAT",
+      "guide_correlation": 0.11219257363493858,
+      "top200_de_correlation": 0.07410293646720245
+    },
+    {
+      "condition": "stimulated",
+      "target": "LCK",
+      "guide_correlation": 0.0048745859907586165,
+      "top200_de_correlation": 0.10529744582894672
+    },
+    {
+      "condition": "stimulated",
+      "target": "MVD",
+      "guide_correlation": 0.04058130788133983,
+      "top200_de_correlation": -0.04685770819710675
+    },
+    {
+      "condition": "stimulated",
+      "target": "NFAT5",
+      "guide_correlation": -0.021090889283425212,
+      "top200_de_correlation": -0.10235945159470902
+    },
+    {
+      "condition": "stimulated",
+      "target": "NFATC1",
+      "guide_correlation": 0.07147943781121975,
+      "top200_de_correlation": -0.013317037901414433
+    },
+    {
+      "condition": "stimulated",
+      "target": "NFATC2",
+      "guide_correlation": 0.04292695973568719,
+      "top200_de_correlation": -0.02916958681469975
+    },
+    {
+      "condition": "stimulated",
+      "target": "NFATC3",
+      "guide_correlation": -0.0384192700955211,
+      "top200_de_correlation": -0.15020868801524173
+    },
+    {
+      "condition": "stimulated",
+      "target": "NFKB1",
+      "guide_correlation": 0.09547367511340972,
+      "top200_de_correlation": 0.190390785809564
+    },
+    {
+      "condition": "stimulated",
+      "target": "NFKB2",
+      "guide_correlation": 0.08463592298235074,
+      "top200_de_correlation": 0.04662058544296891
+    },
+    {
+      "condition": "stimulated",
+      "target": "NR4A1",
+      "guide_correlation": 0.05745872969391286,
+      "top200_de_correlation": -0.05937288149295338
+    },
+    {
+      "condition": "stimulated",
+      "target": "PTPN11",
+      "guide_correlation": 0.03432761168706787,
+      "top200_de_correlation": 0.05591838226986948
+    },
+    {
+      "condition": "stimulated",
+      "target": "PTPN6",
+      "guide_correlation": 0.03667795867336473,
+      "top200_de_correlation": 0.03774949156050778
+    },
+    {
+      "condition": "stimulated",
+      "target": "REL",
+      "guide_correlation": 0.0031844960350319784,
+      "top200_de_correlation": 0.003165696598391974
+    },
+    {
+      "condition": "stimulated",
+      "target": "RELA",
+      "guide_correlation": 0.04039003584002261,
+      "top200_de_correlation": 0.0941262967355952
+    },
+    {
+      "condition": "stimulated",
+      "target": "RELB",
+      "guide_correlation": -0.0009576977621030971,
+      "top200_de_correlation": -0.019404232792767158
+    },
+    {
+      "condition": "stimulated",
+      "target": "RUNX1",
+      "guide_correlation": 0.018078423973799974,
+      "top200_de_correlation": 0.09698420662072652
+    },
+    {
+      "condition": "stimulated",
+      "target": "RUNX2",
+      "guide_correlation": -0.007097824331873662,
+      "top200_de_correlation": -0.07264420908053332
+    },
+    {
+      "condition": "stimulated",
+      "target": "TUBB",
+      "guide_correlation": -0.025742742892802414,
+      "top200_de_correlation": -0.13195036127692697
+    },
+    {
+      "condition": "stimulated",
+      "target": "ZAP70",
+      "guide_correlation": 0.2993309578958475,
+      "top200_de_correlation": 0.37565626939825414
+    },
+    {
+      "condition": "unstimulated",
+      "target": "BACH2",
+      "guide_correlation": 0.055831450401912126,
+      "top200_de_correlation": 0.11215355275356653
+    },
+    {
+      "condition": "unstimulated",
+      "target": "DHODH",
+      "guide_correlation": 0.013629652820726371,
+      "top200_de_correlation": -0.07306225016738314
+    },
+    {
+      "condition": "unstimulated",
+      "target": "DOK2",
+      "guide_correlation": 0.015757949518089467,
+      "top200_de_correlation": 0.015015602783668569
+    },
+    {
+      "condition": "unstimulated",
+      "target": "EGR1",
+      "guide_correlation": 0.06454260151214596,
+      "top200_de_correlation": 0.12592604642331112
+    },
+    {
+      "condition": "unstimulated",
+      "target": "EGR2",
+      "guide_correlation": 0.014968029175377887,
+      "top200_de_correlation": -0.07444675070932842
+    },
+    {
+      "condition": "unstimulated",
+      "target": "EGR3",
+      "guide_correlation": 0.024830558318151043,
+      "top200_de_correlation": 0.02942251876489262
+    },
+    {
+      "condition": "unstimulated",
+      "target": "EGR4",
+      "guide_correlation": 0.05373566845612685,
+      "top200_de_correlation": 0.025028661429682134
+    },
+    {
+      "condition": "unstimulated",
+      "target": "ETS1",
+      "guide_correlation": -0.026601364846513043,
+      "top200_de_correlation": -0.05261722077745946
+    },
+    {
+      "condition": "unstimulated",
+      "target": "FOS",
+      "guide_correlation": 0.003828443367576395,
+      "top200_de_correlation": -0.03947581452760821
+    },
+    {
+      "condition": "unstimulated",
+      "target": "GATA3",
+      "guide_correlation": 0.01570353820232501,
+      "top200_de_correlation": -0.020103320885359696
+    },
+    {
+      "condition": "unstimulated",
+      "target": "JUN",
+      "guide_correlation": 0.024480717877564787,
+      "top200_de_correlation": -0.05083157100198357
+    },
+    {
+      "condition": "unstimulated",
+      "target": "JUNB",
+      "guide_correlation": -0.01652647267757152,
+      "top200_de_correlation": -0.12755034355578387
+    },
+    {
+      "condition": "unstimulated",
+      "target": "JUND",
+      "guide_correlation": 0.06973787164705307,
+      "top200_de_correlation": -0.211860493773952
+    },
+    {
+      "condition": "unstimulated",
+      "target": "LAT",
+      "guide_correlation": -0.009543782042366207,
+      "top200_de_correlation": -0.11820159707573083
+    },
+    {
+      "condition": "unstimulated",
+      "target": "LCK",
+      "guide_correlation": 0.0020257042767095226,
+      "top200_de_correlation": -0.07811434634821686
+    },
+    {
+      "condition": "unstimulated",
+      "target": "MVD",
+      "guide_correlation": 0.1550651772882837,
+      "top200_de_correlation": 0.24878967818030795
+    },
+    {
+      "condition": "unstimulated",
+      "target": "NFAT5",
+      "guide_correlation": 0.01515903578004027,
+      "top200_de_correlation": -0.0591571559484547
+    },
+    {
+      "condition": "unstimulated",
+      "target": "NFATC1",
+      "guide_correlation": 0.05002360610666196,
+      "top200_de_correlation": -0.08374489756935731
+    },
+    {
+      "condition": "unstimulated",
+      "target": "NFATC2",
+      "guide_correlation": 0.04419240221919613,
+      "top200_de_correlation": 0.04817686911933157
+    },
+    {
+      "condition": "unstimulated",
+      "target": "NFATC3",
+      "guide_correlation": 0.008262511973662713,
+      "top200_de_correlation": 0.14476294185491587
+    },
+    {
+      "condition": "unstimulated",
+      "target": "NFKB1",
+      "guide_correlation": 0.10659231862711127,
+      "top200_de_correlation": 0.12631058145698307
+    },
+    {
+      "condition": "unstimulated",
+      "target": "NFKB2",
+      "guide_correlation": 0.01868602800962041,
+      "top200_de_correlation": 0.16864048083078814
+    },
+    {
+      "condition": "unstimulated",
+      "target": "NR4A1",
+      "guide_correlation": 0.09717050963511686,
+      "top200_de_correlation": -0.03740657449256101
+    },
+    {
+      "condition": "unstimulated",
+      "target": "PTPN11",
+      "guide_correlation": 0.0716547832846185,
+      "top200_de_correlation": 0.2560291204885568
+    },
+    {
+      "condition": "unstimulated",
+      "target": "PTPN6",
+      "guide_correlation": 0.058212446260583674,
+      "top200_de_correlation": 0.10622045962619375
+    },
+    {
+      "condition": "unstimulated",
+      "target": "REL",
+      "guide_correlation": 0.005545208035083607,
+      "top200_de_correlation": 0.013601469566274267
+    },
+    {
+      "condition": "unstimulated",
+      "target": "RELA",
+      "guide_correlation": 0.15739144562533505,
+      "top200_de_correlation": 0.2706610015458265
+    },
+    {
+      "condition": "unstimulated",
+      "target": "RELB",
+      "guide_correlation": 0.06616913342147257,
+      "top200_de_correlation": 0.08994433296359394
+    },
+    {
+      "condition": "unstimulated",
+      "target": "RUNX1",
+      "guide_correlation": -0.003628111920045472,
+      "top200_de_correlation": -0.107606745355438
+    },
+    {
+      "condition": "unstimulated",
+      "target": "RUNX2",
+      "guide_correlation": 0.06051025672896338,
+      "top200_de_correlation": 0.3119230193382682
+    },
+    {
+      "condition": "unstimulated",
+      "target": "TUBB",
+      "guide_correlation": 0.004259571434283744,
+      "top200_de_correlation": -0.04646929462987119
+    },
+    {
+      "condition": "unstimulated",
+      "target": "ZAP70",
+      "guide_correlation": 0.1450989235889548,
+      "top200_de_correlation": 0.23992804251536726
+    }
+  ]
+}

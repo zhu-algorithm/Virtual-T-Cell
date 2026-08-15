@@ -1,1 +1,112 @@
 # Virtual T Cell
+
+第三个独立算法平台：基于公开 T 细胞 CROP-seq 数据预测单基因敲除或多靶点抑制后的转录组与信号通路变化。
+
+本仓库与“天然产物筛选”和“PD-L1 环肽”平台完全独立，拥有自己的源码、模型、依赖、测试和 CI。
+
+## 当前能力
+
+- 单基因 KO 转录响应预测；
+- stimulated / unstimulated 两种 TCR 条件；
+- 多靶点及不同抑制强度的药物近似；
+- TCR、NFAT、NF-κB、AP-1/MAPK、JAK-STAT、激活、细胞毒、耗竭、增殖和凋亡通路评分；
+- 基因级不确定性；
+- 对少量未观测靶点使用显式标记的网络邻居外推。
+
+## 快速运行
+
+```bash
+python -m venv .venv
+```
+
+Windows PowerShell：
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+python -m pip install -e .
+virtual-t-cell predict `
+  --model models\gse92872_virtual_t_cell.npz `
+  --condition stimulated `
+  --perturb LCK `
+  --out-dir run_output\LCK_KO
+```
+
+Linux/macOS：
+
+```bash
+source .venv/bin/activate
+python -m pip install -e .
+virtual-t-cell predict \
+  --model models/gse92872_virtual_t_cell.npz \
+  --condition stimulated \
+  --perturb LCK \
+  --out-dir run_output/LCK_KO
+```
+
+输出：
+
+- `gene_predictions.csv`：基线表达、预测表达、变化量和标准误；
+- `pathway_predictions.csv`：10 类 T 细胞功能/信号通路变化；
+- `prediction_metadata.json`：条件、靶点、强度和外推模式。
+
+## 多靶点药物近似
+
+例如 LCK 抑制 80%，PTPN11 抑制 30%：
+
+```powershell
+virtual-t-cell predict `
+  --model models\gse92872_virtual_t_cell.npz `
+  --condition stimulated `
+  --perturb LCK:0.8 PTPN11:0.3 `
+  --out-dir run_output\drug_like
+```
+
+当前采用加性扰动近似，尚未学习真实剂量、时间和非线性交互。
+
+## 从 GSE92872 重新训练
+
+从 [NCBI GEO GSE92872](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE92872) 下载：
+
+```text
+GSE92872_CROP-seq_Jurkat_TCR.digital_expression.csv.gz
+```
+
+然后运行：
+
+```powershell
+virtual-t-cell prepare --expression data\GSE92872_CROP-seq_Jurkat_TCR.digital_expression.csv.gz --out artifacts\gse92872_prepared.npz --genes 2000
+virtual-t-cell train --prepared artifacts\gse92872_prepared.npz --out models\gse92872_virtual_t_cell.npz
+```
+
+GSE137554 的注释和 10x HDF5 可从 [NCBI GEO GSE137554](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE137554) 下载。解析旧版 HDF5 需要：
+
+```bash
+python -m pip install -e ".[hdf5]"
+```
+
+## 验证结果与边界
+
+模型使用 GSE92872 的 5,905 个 Jurkat 细胞训练，覆盖 32 个非对照靶点和两个刺激条件。独立 sgRNA 配对验证的全基因中位 Pearson 约为 `0.040`，说明数据噪声较强。
+
+因此：
+
+- 当前版本是机制探索和工程原型；
+- 不能作为临床疗效预测器；
+- Jurkat 不能替代原代 CD4、CD8 或 Treg；
+- 药物模拟是靶点效应加性近似；
+- 结果必须经过 Perturb-seq、流式、细胞因子和功能实验验证。
+
+完整验证指标位于 `models/gse92872_validation_metrics.json`。
+
+## 测试
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+GitHub Actions 会在 Python 3.10、3.11 和 3.12 上执行安装、语法检查和端到端预测测试。
+
+## 许可证
+
+MIT。公开数据仍受其原始数据库和论文的数据使用条款约束。
+

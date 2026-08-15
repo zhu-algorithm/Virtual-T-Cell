@@ -1,0 +1,16 @@
+{
+  "condition": "stimulated",
+  "perturbations": [
+    {
+      "target": "LCK",
+      "strength": 0.8,
+      "mode": "observed"
+    },
+    {
+      "target": "PTPN11",
+      "strength": 0.3,
+      "mode": "observed"
+    }
+  ],
+  "interpretation": "Transcriptomic hypothesis; not a clinical efficacy estimate."
+}
