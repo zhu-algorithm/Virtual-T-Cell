@@ -4,6 +4,11 @@
 
 本仓库与“天然产物筛选”和“PD-L1 环肽”平台完全独立，拥有自己的源码、模型、依赖、测试和 CI。
 
+## Developer
+
+**Di Zhu**  
+[Google Scholar](https://scholar.google.com/citations?user=HSui3U8AAAAJ&hl=en)
+
 ## 当前能力
 
 - 单基因 KO 转录响应预测；
@@ -109,4 +114,3 @@ GitHub Actions 会在 Python 3.10、3.11 和 3.12 上执行安装、语法检查
 ## 许可证
 
 MIT。公开数据仍受其原始数据库和论文的数据使用条款约束。
-

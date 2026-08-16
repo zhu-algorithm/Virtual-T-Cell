@@ -9,11 +9,15 @@ description = "A reproducible T-cell transcriptomic perturbation simulator train
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
-authors = [{name = "zhu-algorithm"}]
+authors = [{name = "Di Zhu"}]
 dependencies = [
   "numpy>=1.24,<3",
   "pandas>=2,<4",
 ]
+
+[project.urls]
+Repository = "https://github.com/zhu-algorithm/Virtual-T-Cell"
+"Developer profile" = "https://scholar.google.com/citations?user=HSui3U8AAAAJ&hl=en"
 
 [project.optional-dependencies]
 hdf5 = ["h5py>=3.10,<4"]
@@ -26,4 +30,3 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
-
