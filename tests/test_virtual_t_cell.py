@@ -13,6 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 MODEL = ROOT / "models" / "gse92872_virtual_t_cell.npz"
 PRIMARY_MODEL = ROOT / "models" / "gse314342_primary_cd4_virtual_t_cell.npz"
 TCR_DATABASE = ROOT / "models" / "vdjdb_2026_06_tcr_evidence.npz"
+CONTEXT_MODEL = ROOT / "models" / "gse278572_primary_context_virtual_t_cell.npz"
 
 
 class VirtualTCellTests(unittest.TestCase):
@@ -29,6 +30,15 @@ class VirtualTCellTests(unittest.TestCase):
         self.assertGreater(len(database["field_cdr3"]), 100000)
         self.assertIn("TRA", database["field_gene"])
         self.assertIn("TRB", database["field_gene"])
+
+    def test_gse278572_is_primary_context_model(self):
+        model = np.load(CONTEXT_MODEL, allow_pickle=False)
+        self.assertEqual(model["source"].item(), "GSE278572_primary")
+        self.assertGreaterEqual(len(model["targets"]), 500)
+        self.assertEqual(model["conditions"].tolist(),
+                         ["Teff_Resting", "Teff_Stimulated", "Treg_Resting", "Treg_Stimulated"])
+        self.assertIn("MED12", model["targets"])
+        self.assertGreater(len(model["screen_targets"]), 19000)
 
     def test_bundled_model_schema(self):
         model = np.load(MODEL, allow_pickle=False)

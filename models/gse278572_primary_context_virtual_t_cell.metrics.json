@@ -1,0 +1,18 @@
+{
+  "primary_source": "GSE278572 / Zenodo 13924126",
+  "auxiliary_source": "Zenodo 5784651",
+  "fallback_source": "GSE314342",
+  "conditions": [
+    "Teff_Resting",
+    "Teff_Stimulated",
+    "Treg_Resting",
+    "Treg_Stimulated"
+  ],
+  "targets": 527,
+  "response_genes": 2151,
+  "gse278572_targets": 23,
+  "gse278572_significant_effects": 705,
+  "activation_targets": 29,
+  "screen_targets": 19135,
+  "clinical_use": false
+}

@@ -76,8 +76,8 @@ Windows PowerShell：
 .\.venv\Scripts\Activate.ps1
 python -m pip install -e .
 virtual-t-cell predict `
-  --model models\gse314342_primary_cd4_virtual_t_cell.npz `
-  --condition Stim8hr `
+  --model models\gse278572_primary_context_virtual_t_cell.npz `
+  --condition Teff_Stimulated `
   --perturb LCK `
   --out-dir run_output\LCK_KO
 ```
@@ -88,8 +88,8 @@ Linux/macOS：
 source .venv/bin/activate
 python -m pip install -e .
 virtual-t-cell predict \
-  --model models/gse314342_primary_cd4_virtual_t_cell.npz \
-  --condition Stim8hr \
+  --model models/gse278572_primary_context_virtual_t_cell.npz \
+  --condition Teff_Stimulated \
   --perturb LCK \
   --out-dir run_output/LCK_KO
 ```
