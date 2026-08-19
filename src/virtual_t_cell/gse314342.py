@@ -77,7 +77,10 @@ def build_gse314342_model(
     lfc_se_all = np.nan_to_num(lfc_se_all, nan=0.0, posinf=0.0, neginf=0.0)
     base_mean_all = np.nan_to_num(base_mean_all, nan=0.0, posinf=0.0, neginf=0.0)
 
-    gene_names = a.var["gene_name"].astype(str).to_numpy() if "gene_name" in a.var else a.var_names.astype(str).to_numpy()
+    gene_names = np.asarray(
+        a.var["gene_name"].astype(str).to_numpy() if "gene_name" in a.var else a.var_names.astype(str).to_numpy(),
+        dtype=str,
+    )
     forced = {
         "CD3D", "CD3E", "CD3G", "LCK", "FYN", "ZAP70", "LAT", "LCP2", "ITK", "PLCG1",
         "NFATC1", "NFATC2", "NFKB1", "RELA", "FOS", "JUN", "IL2", "IFNG", "TNF",
