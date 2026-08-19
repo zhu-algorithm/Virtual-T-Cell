@@ -1,5 +1,6 @@
 {
   "primary_source": "GSE278572 / Zenodo 13924126",
+  "cross_dataset_validation": "GSE92872 Jurkat TCR stimulation",
   "auxiliary_source": "Zenodo 5784651",
   "fallback_source": "GSE314342",
   "conditions": [
@@ -14,5 +15,8 @@
   "gse278572_significant_effects": 705,
   "activation_targets": 29,
   "screen_targets": 19135,
+  "gse92872_shared_targets": 5,
+  "gse92872_shared_genes": 95,
+  "gse92872_median_top200_pearson": 0.06643297523260117,
   "clinical_use": false
 }

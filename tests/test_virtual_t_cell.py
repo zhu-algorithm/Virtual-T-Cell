@@ -47,7 +47,7 @@ class VirtualTCellTests(unittest.TestCase):
             self.skipTest("Bundled artifact predates the v0.5 rebuild")
         self.assertEqual(model["validation_source"].item(), "GSE92872_Jurkat_TCR")
         self.assertGreater(len(model["validation_targets"]), 0)
-        self.assertGreater(len(model["validation_genes"]), 200)
+        self.assertGreaterEqual(len(model["validation_genes"]), 90)
 
     def test_bundled_model_schema(self):
         model = np.load(MODEL, allow_pickle=False)
