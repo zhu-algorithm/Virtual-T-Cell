@@ -17,6 +17,33 @@
 - TCR、NFAT、NF-κB、AP-1/MAPK、JAK-STAT、激活、细胞毒、耗竭、增殖和凋亡通路评分；
 - 基因级不确定性；
 - 对少量未观测靶点使用显式标记的网络邻居外推。
+- TCRα/β CDR3、V/J、HLA、表位和抗原证据匹配；
+- 10x Cell Ranger VDJ `filtered_contig_annotations.csv` 的克隆型、αβ 配对率和多样性分析。
+
+## TCR 测序预测
+
+仓库内置 VDJdb 2026-06-03 的人类 TCR 紧凑证据库，包含 180,895 条记录、163,598 个唯一 CDR3、60,404 条 α 链、120,491 条 β 链和 1,946 个表位。查询配对 α/β 链：
+
+```powershell
+virtual-t-cell predict-tcr `
+  --database models\vdjdb_2026_06_tcr_evidence.npz `
+  --cdr3-alpha CAAAAAGNEKLTF `
+  --cdr3-beta CASSEGTGELFF `
+  --max-distance 1 `
+  --out run_output\tcr_specificity.csv
+```
+
+`edit_distance=0` 表示数据库精确证据；距离大于 0 的结果仅表示序列近邻假设。α、β 链都支持同一表位时会显示更高的配对链证据等级。不能把序列近似等同于确定的抗原结合。
+
+分析自己的 10x VDJ 文件：
+
+```powershell
+virtual-t-cell analyze-tcr `
+  --contigs filtered_contig_annotations.csv `
+  --out-dir run_output\repertoire
+```
+
+候选数据源及整合状态见 `data_sources/tcr_sources.json`。第三方数据许可与引用要求见 `THIRD_PARTY_DATA.md`。
 
 ## v0.2 原代 CD4⁺ T 细胞数据升级
 

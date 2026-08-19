@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "sources": [
+    {
+      "name": "VDJdb",
+      "release": "2026-06-03",
+      "url": "https://github.com/antigenomics/vdjdb-db/releases/tag/2026-06-03",
+      "content": "Curated TRA/TRB to epitope, antigen and MHC evidence",
+      "status": "bundled_compact_database",
+      "license": "AGPL-3.0"
+    },
+    {
+      "name": "IEDB TCR",
+      "url": "https://cedar.iedb.org/database_export_v3.php",
+      "content": "Curated receptor sequences, epitopes, antigens and assays",
+      "status": "registered_for_import",
+      "access": "weekly tcr_full_v3 export or IQ-API"
+    },
+    {
+      "name": "McPAS-TCR",
+      "url": "http://friedmanlab.weizmann.ac.il/McPAS-TCR/",
+      "content": "Pathology-associated TCR sequences",
+      "status": "registered_for_import"
+    },
+    {
+      "name": "10x Genomics BEAM-T and dCODE",
+      "url": "https://www.10xgenomics.com/resources/datasets",
+      "content": "Paired scRNA, TRA/TRB and antigen-capture measurements",
+      "status": "registered_for_cell_state_training"
+    },
+    {
+      "name": "TCRdb 2.0",
+      "url": "http://bioinfo.life.hust.edu.cn/TCRdb/",
+      "content": "Large public TCR repertoire sequencing collection",
+      "status": "registered_for_repertoire_background"
+    },
+    {
+      "name": "immuneCODE",
+      "url": "https://clients.adaptivebiotech.com/pub/covid-2020",
+      "content": "Large TCR-beta repertoire and SARS-CoV-2 association data",
+      "status": "registered_license_review_required"
+    }
+  ]
+}

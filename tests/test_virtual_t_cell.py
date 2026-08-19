@@ -12,6 +12,7 @@ from virtual_t_cell.cli import parse_perturbations, pathway_scores, predict
 ROOT = Path(__file__).resolve().parents[1]
 MODEL = ROOT / "models" / "gse92872_virtual_t_cell.npz"
 PRIMARY_MODEL = ROOT / "models" / "gse314342_primary_cd4_virtual_t_cell.npz"
+TCR_DATABASE = ROOT / "models" / "vdjdb_2026_06_tcr_evidence.npz"
 
 
 class VirtualTCellTests(unittest.TestCase):
@@ -21,6 +22,13 @@ class VirtualTCellTests(unittest.TestCase):
         self.assertGreaterEqual(len(model["genes"]), 200)
         self.assertEqual(model["source"].item(), "GSE314342")
         self.assertEqual(model["conditions"].tolist(), ["Rest", "Stim8hr", "Stim48hr"])
+
+    def test_tcr_database_schema_and_scale(self):
+        database = np.load(TCR_DATABASE, allow_pickle=False)
+        self.assertEqual(database["source"].item(), "VDJdb")
+        self.assertGreater(len(database["field_cdr3"]), 100000)
+        self.assertIn("TRA", database["field_gene"])
+        self.assertIn("TRB", database["field_gene"])
 
     def test_bundled_model_schema(self):
         model = np.load(MODEL, allow_pickle=False)

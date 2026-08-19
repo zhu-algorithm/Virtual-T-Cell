@@ -1,0 +1,11 @@
+{
+  "source": "VDJdb",
+  "source_release": "vdjdb-2026-06-03",
+  "species": "HomoSapiens",
+  "records": 180895,
+  "unique_cdr3": 163598,
+  "alpha_records": 60404,
+  "beta_records": 120491,
+  "unique_epitopes": 1946,
+  "prediction_type": "curated evidence and sequence-neighbor inference"
+}
