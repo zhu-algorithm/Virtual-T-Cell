@@ -1,0 +1,15 @@
+{
+  "datasets": ["GSE92872", "GSE278572"],
+  "files": {
+    "GSE278572_barcodes.tsv.gz": {"bytes": 1121892, "sha256": "0c26723009bb4e507437c49ba92e382506f676c8e3c1ba19245db1208a2514b7"},
+    "GSE278572_features.tsv.gz": {"bytes": 335300, "sha256": "411d0aef6d630eee905f67ea79d1ca0608ff7bc293591aa45ca8019f234f00ba"},
+    "GSE278572_matrix.mtx.gz": {"bytes": 3857480145, "sha256": "344a890a56a93bb01c4f7d86bd55ecca118950af43e20023e84c9a689cbb00d5"},
+    "GSE278572_protospacer_calls_per_cell.csv.gz": {"bytes": 1952405, "sha256": "1c556df41f441987033bdfc002bc6a25f5194ec39ebbe2ace66baedb2ec3636e"},
+    "GSE92872_CROP-seq_Jurkat_TCR.count_matrix.csv.gz": {"bytes": 1621695, "sha256": "443cf59ace5da75b9dddadedd51a95186d251f8a88e0e683cdfcecb50ac73cfb"},
+    "GSE92872_CROP-seq_Jurkat_TCR.digital_expression.csv.gz": {"bytes": 18181357, "sha256": "3e0bb8554fdd6f732ec039e703f685631334e9c06029864e81594babc8def0af"}
+  },
+  "gse278572_matrix_shape": [36807, 249799, 1027798128],
+  "gse278572_barcodes": 249799,
+  "gse278572_features": 36807,
+  "gse278572_protospacer_rows": 191620
+}
