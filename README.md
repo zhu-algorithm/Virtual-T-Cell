@@ -29,7 +29,7 @@
 - log2 fold-change 效应、标准误、每个扰动的细胞数和三种状态基线；
 - 严格排除低表达、单 guide、邻近基因共同敲低和远端脱靶结果。
 
-仓库不直接存放数 GB 的单细胞原始矩阵；构建工作流从官方公开 S3 数据源下载，并把可运行的紧凑模型作为 GitHub Actions artifact 发布。
+仓库不直接存放数 GB 的单细胞原始矩阵；构建工作流从官方公开 S3 数据源下载。已经通过下载、构建和真实预测冒烟测试的紧凑模型存放在 `models/gse314342_primary_cd4_virtual_t_cell.npz`，同时也作为 GitHub Actions artifact 发布。
 
 ## 快速运行
 
@@ -43,8 +43,8 @@ Windows PowerShell：
 .\.venv\Scripts\Activate.ps1
 python -m pip install -e .
 virtual-t-cell predict `
-  --model models\gse92872_virtual_t_cell.npz `
-  --condition stimulated `
+  --model models\gse314342_primary_cd4_virtual_t_cell.npz `
+  --condition Stim8hr `
   --perturb LCK `
   --out-dir run_output\LCK_KO
 ```
@@ -55,8 +55,8 @@ Linux/macOS：
 source .venv/bin/activate
 python -m pip install -e .
 virtual-t-cell predict \
-  --model models/gse92872_virtual_t_cell.npz \
-  --condition stimulated \
+  --model models/gse314342_primary_cd4_virtual_t_cell.npz \
+  --condition Stim8hr \
   --perturb LCK \
   --out-dir run_output/LCK_KO
 ```

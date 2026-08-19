@@ -11,9 +11,17 @@ from virtual_t_cell.cli import parse_perturbations, pathway_scores, predict
 
 ROOT = Path(__file__).resolve().parents[1]
 MODEL = ROOT / "models" / "gse92872_virtual_t_cell.npz"
+PRIMARY_MODEL = ROOT / "models" / "gse314342_primary_cd4_virtual_t_cell.npz"
 
 
 class VirtualTCellTests(unittest.TestCase):
+    def test_primary_cd4_model_meets_scale_requirement(self):
+        model = np.load(PRIMARY_MODEL, allow_pickle=False)
+        self.assertGreaterEqual(len(model["targets"]), 200)
+        self.assertGreaterEqual(len(model["genes"]), 200)
+        self.assertEqual(model["source"].item(), "GSE314342")
+        self.assertEqual(model["conditions"].tolist(), ["Rest", "Stim8hr", "Stim48hr"])
+
     def test_bundled_model_schema(self):
         model = np.load(MODEL, allow_pickle=False)
         self.assertIn("stimulated", model["conditions"].tolist())
@@ -43,4 +51,3 @@ class VirtualTCellTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

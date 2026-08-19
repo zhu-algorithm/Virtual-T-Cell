@@ -1,0 +1,16 @@
+{
+  "source": "GSE314342 / Primary Human CD4+ T Cell Perturb-seq v1.0",
+  "model_targets": 512,
+  "minimum_required_targets": 200,
+  "measured_response_genes": 2066,
+  "conditions": [
+    "Rest",
+    "Stim8hr",
+    "Stim48hr"
+  ],
+  "input_perturbation_condition_rows": 33983,
+  "input_measured_genes": 10282,
+  "qc": "on-target significant; >=2 guides; excludes low-expression, cis/distal off-target and single-guide estimates",
+  "effect_unit": "log2 fold change",
+  "clinical_use": false
+}
