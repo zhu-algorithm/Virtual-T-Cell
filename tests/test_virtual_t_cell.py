@@ -40,6 +40,15 @@ class VirtualTCellTests(unittest.TestCase):
         self.assertIn("MED12", model["targets"])
         self.assertGreater(len(model["screen_targets"]), 19000)
 
+    def test_context_model_contains_gse92872_validation(self):
+        model = np.load(CONTEXT_MODEL, allow_pickle=False)
+        # Models rebuilt by the v0.5 workflow contain the independent Jurkat layer.
+        if "validation_source" not in model.files:
+            self.skipTest("Bundled artifact predates the v0.5 rebuild")
+        self.assertEqual(model["validation_source"].item(), "GSE92872_Jurkat_TCR")
+        self.assertGreater(len(model["validation_targets"]), 0)
+        self.assertGreater(len(model["validation_genes"]), 200)
+
     def test_bundled_model_schema(self):
         model = np.load(MODEL, allow_pickle=False)
         self.assertIn("stimulated", model["conditions"].tolist())

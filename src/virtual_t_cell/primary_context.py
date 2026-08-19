@@ -12,7 +12,14 @@ def _member(archive, suffix):
     if len(matches) != 1: raise ValueError(f"Expected one {suffix}, found {matches}")
     return matches[0]
 
-def build_primary_context_model(data_tables_zip: Path, screens_zip: Path, fallback_model: Path, out: Path) -> dict:
+def _correlation(left, right):
+    if len(left) < 3 or np.std(left) == 0 or np.std(right) == 0:
+        return np.nan
+    return float(np.corrcoef(left, right)[0, 1])
+
+
+def build_primary_context_model(data_tables_zip: Path, screens_zip: Path, fallback_model: Path,
+                                gse92872_model: Path, out: Path) -> dict:
     with zipfile.ZipFile(data_tables_zip) as z:
         with z.open(_member(z, "S9_pseudobulk_rnaseq_diff_expressed_regulators.xlsx")) as f: de = pd.read_excel(f)
         with z.open(_member(z, "S8_perturb_seq_activation_scoring_summary_table.xlsx")) as f: activation = pd.read_excel(f)
@@ -54,7 +61,23 @@ def build_primary_context_model(data_tables_zip: Path, screens_zip: Path, fallba
     sl=np.zeros((4,len(st)),np.float32); sf=np.ones_like(sl)
     for pi,frame in enumerate(frames):
         for gene,r in frame.iterrows(): sl[pi,sp[gene]]=float(r["pos|lfc"]); sf[pi,sp[gene]]=float(min(r["pos|fdr"],r["neg|fdr"]))
+    # GSE92872 is a Jurkat TCR-stimulation experiment. Keep it as an independent
+    # validation layer instead of averaging cell-line effects into primary cells.
+    legacy=np.load(gse92872_model,allow_pickle=False)
+    lg=legacy["genes"].astype(str).tolist(); lt=legacy["targets"].astype(str).tolist()
+    vg=np.asarray(sorted(set(genes).intersection(lg)),dtype=str)
+    vt=np.asarray(sorted(set(targets).intersection(lt)),dtype=str)
+    vgp=np.asarray([gp[g] for g in vg]); lgp=np.asarray([lg.index(g) for g in vg])
+    vp=np.full((4,len(vt)),np.nan,np.float32); vp200=np.full_like(vp,np.nan)
+    legacy_conditions=legacy["conditions"].astype(str).tolist()
+    for ci,condition in enumerate(CONDITIONS):
+        li=legacy_conditions.index("stimulated" if condition.endswith("Stimulated") else "unstimulated")
+        for ti,target in enumerate(vt):
+            left=effects[ci,tp[target],vgp]; right=legacy["effects"][li,lt.index(target),lgp]
+            vp[ci,ti]=_correlation(left,right)
+            rank=np.argsort(np.maximum(np.abs(left),np.abs(right)))[-min(200,len(vg)):]
+            vp200[ci,ti]=_correlation(left[rank],right[rank])
     out.parent.mkdir(parents=True,exist_ok=True)
-    np.savez_compressed(out,genes=genes,conditions=np.asarray(CONDITIONS),targets=targets,baseline=baseline,effects=effects,uncertainty=unc,counts=counts,effect_source=effect_source,source=np.asarray("GSE278572_primary"),effect_unit=np.asarray("log2_fold_change"),activation_targets=at,activation_contexts=ac,activation_score=av,screen_targets=st,screen_phenotypes=np.asarray(names),screen_lfc=sl,screen_fdr=sf)
-    summary={"primary_source":"GSE278572 / Zenodo 13924126","auxiliary_source":"Zenodo 5784651","fallback_source":"GSE314342","conditions":CONDITIONS,"targets":len(targets),"response_genes":len(genes),"gse278572_targets":len(pt),"gse278572_significant_effects":len(grouped),"activation_targets":len(at),"screen_targets":len(st),"clinical_use":False}
+    np.savez_compressed(out,genes=genes,conditions=np.asarray(CONDITIONS),targets=targets,baseline=baseline,effects=effects,uncertainty=unc,counts=counts,effect_source=effect_source,source=np.asarray("GSE278572_primary"),effect_unit=np.asarray("log2_fold_change"),activation_targets=at,activation_contexts=ac,activation_score=av,screen_targets=st,screen_phenotypes=np.asarray(names),screen_lfc=sl,screen_fdr=sf,validation_source=np.asarray("GSE92872_Jurkat_TCR"),validation_targets=vt,validation_genes=vg,validation_pearson=vp,validation_top200_pearson=vp200)
+    summary={"primary_source":"GSE278572 / Zenodo 13924126","cross_dataset_validation":"GSE92872 Jurkat TCR stimulation","auxiliary_source":"Zenodo 5784651","fallback_source":"GSE314342","conditions":CONDITIONS,"targets":len(targets),"response_genes":len(genes),"gse278572_targets":len(pt),"gse278572_significant_effects":len(grouped),"activation_targets":len(at),"screen_targets":len(st),"gse92872_shared_targets":len(vt),"gse92872_shared_genes":len(vg),"gse92872_median_top200_pearson":float(np.nanmedian(vp200)),"clinical_use":False}
     out.with_suffix(".metrics.json").write_text(json.dumps(summary,indent=2),encoding="utf-8"); return summary

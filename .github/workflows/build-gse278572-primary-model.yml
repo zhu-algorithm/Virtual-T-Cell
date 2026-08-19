@@ -26,6 +26,7 @@ jobs:
             --data-tables-zip data_tables.zip \
             --screens-zip genome_wide_screens.zip \
             --fallback-model models/gse314342_primary_cd4_virtual_t_cell.npz \
+            --gse92872-model models/gse92872_virtual_t_cell.npz \
             --out models/gse278572_primary_context_virtual_t_cell.npz
       - name: End-to-end prediction
         run: |
@@ -33,6 +34,7 @@ jobs:
             --condition Teff_Stimulated --perturb MED12 --out-dir smoke
           test -s smoke/gene_predictions.csv
           test -s smoke/phenotype_predictions.csv
+          test -s smoke/cross_dataset_validation.csv
       - uses: actions/upload-artifact@v4
         with:
           name: gse278572-primary-context-model

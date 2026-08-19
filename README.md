@@ -64,6 +64,10 @@ virtual-t-cell analyze-tcr `
 
 四个状态为 `Teff_Resting`、`Teff_Stimulated`、`Treg_Resting`、`Treg_Stimulated`。预测除基因与通路文件外，还输出 `phenotype_predictions.csv`，记录 Zenodo 5784651 支持的 IL2/IFNG CRISPRa/i 表型及 FDR。
 
+v0.5 同时整合两个 GEO 数据集：GSE278572 作为原代 Treg/Teff 主效应层，GSE92872 作为 Jurkat TCR 刺激的独立跨数据验证层。对于两套数据共有的干预靶点，预测会额外生成 `cross_dataset_validation.csv`，报告所有共有响应基因和 Top-200 响应基因的 Pearson 方向一致性。由于细胞来源不同，两者不会被直接平均。
+
+原始数据可通过 GitHub Actions 的 **Download and validate GEO sources** 工作流复现下载。工作流下载 GSE92872 的两个表达矩阵，以及 GSE278572 的 barcodes、features、3.6 GB Matrix Market 矩阵和 protospacer calls；随后生成包含文件大小、SHA-256、矩阵维度和行数的 `geo_download_manifest.json`。大型原始数据不纳入 Git 历史。
+
 ## 快速运行
 
 ```bash

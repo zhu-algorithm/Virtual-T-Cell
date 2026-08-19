@@ -1,0 +1,29 @@
+name: Download and validate GEO sources
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  download:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download GSE92872 and GSE278572
+        run: |
+          mkdir geo_raw
+          base92872='https://ftp.ncbi.nlm.nih.gov/geo/series/GSE92nnn/GSE92872/suppl'
+          base278572='https://ftp.ncbi.nlm.nih.gov/geo/series/GSE278nnn/GSE278572/suppl'
+          for file in GSE92872_CROP-seq_Jurkat_TCR.count_matrix.csv.gz GSE92872_CROP-seq_Jurkat_TCR.digital_expression.csv.gz; do
+            curl -L --fail --retry 5 --continue-at - -o "geo_raw/$file" "$base92872/$file"
+          done
+          for file in GSE278572_barcodes.tsv.gz GSE278572_features.tsv.gz GSE278572_matrix.mtx.gz GSE278572_protospacer_calls_per_cell.csv.gz; do
+            curl -L --fail --retry 5 --continue-at - -o "geo_raw/$file" "$base278572/$file"
+          done
+      - name: Validate archives and record checksums
+        run: python scripts/validate_geo_downloads.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: geo-download-manifest
+          path: geo_download_manifest.json
+          retention-days: 90
