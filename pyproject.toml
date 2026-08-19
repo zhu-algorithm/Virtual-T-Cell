@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "virtual-t-cell"
-version = "0.1.0"
+version = "0.2.0"
 description = "A reproducible T-cell transcriptomic perturbation simulator trained on public CROP-seq data."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -21,6 +21,7 @@ Repository = "https://github.com/zhu-algorithm/Virtual-T-Cell"
 
 [project.optional-dependencies]
 hdf5 = ["h5py>=3.10,<4"]
+atlas = ["anndata>=0.10,<1", "h5py>=3.10,<4", "scipy>=1.10,<2"]
 
 [project.scripts]
 virtual-t-cell = "virtual_t_cell.cli:main"
