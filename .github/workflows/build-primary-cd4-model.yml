@@ -1,0 +1,54 @@
+name: Build primary CD4 T-cell atlas model
+
+on:
+  workflow_dispatch:
+    inputs:
+      targets:
+        description: High-confidence perturbed genes to retain
+        default: "512"
+        required: true
+      genes:
+        description: Transcriptomic response genes to retain
+        default: "2048"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: python -m pip install -e ".[atlas]"
+      - name: Locate and download published GSE314342 DE matrix
+        run: |
+          mkdir -p data
+          key=$(aws s3 ls --no-sign-request --recursive s3://genome-scale-tcell-perturb-seq/marson2025_data/ | awk '$4 ~ /GWCD4i.DE_stats.h5ad$/ {print $4; exit}')
+          test -n "$key"
+          aws s3 cp --no-sign-request "s3://genome-scale-tcell-perturb-seq/$key" data/GWCD4i.DE_stats.h5ad
+      - name: Build compact high-confidence model
+        run: |
+          virtual-t-cell prepare-gse314342 \
+            --de-h5ad data/GWCD4i.DE_stats.h5ad \
+            --out models/gse314342_primary_cd4_virtual_t_cell.npz \
+            --targets "${{ inputs.targets }}" \
+            --genes "${{ inputs.genes }}"
+      - name: Smoke test model
+        run: |
+          TARGET=$(python -c 'import numpy as np; print(np.load("models/gse314342_primary_cd4_virtual_t_cell.npz")["targets"][0])')
+          virtual-t-cell predict --model models/gse314342_primary_cd4_virtual_t_cell.npz \
+            --condition Stim8hr --perturb "$TARGET" --out-dir smoke-output
+          test -s smoke-output/gene_predictions.csv
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gse314342-primary-cd4-model
+          path: |
+            models/gse314342_primary_cd4_virtual_t_cell.npz
+            models/gse314342_primary_cd4_virtual_t_cell.metrics.json
+          retention-days: 30

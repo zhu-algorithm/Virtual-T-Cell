@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Virtual T-cell perturbation simulator for GSE92872/GSE137554.
+"""Virtual T-cell perturbation simulator for public Perturb-seq atlases.
 
 The default training path uses GSE92872 and has only NumPy/Pandas dependencies.
 GSE137554 is supported as an optional 10x-HDF5 validation source when h5py is
@@ -276,11 +276,15 @@ def main():
     sub = ap.add_subparsers(dest="cmd", required=True)
     p = sub.add_parser("prepare"); p.add_argument("--expression", type=Path, required=True); p.add_argument("--out", type=Path, required=True); p.add_argument("--genes", type=int, default=2000)
     p = sub.add_parser("train"); p.add_argument("--prepared", type=Path, required=True); p.add_argument("--out", type=Path, required=True); p.add_argument("--shrinkage", type=float, default=20)
+    p = sub.add_parser("prepare-gse314342"); p.add_argument("--de-h5ad", type=Path, required=True); p.add_argument("--out", type=Path, required=True); p.add_argument("--targets", type=int, default=512); p.add_argument("--genes", type=int, default=2048)
     p = sub.add_parser("predict"); p.add_argument("--model", type=Path, required=True); p.add_argument("--condition", required=True); p.add_argument("--perturb", nargs="+", required=True); p.add_argument("--out-dir", type=Path, required=True)
     p = sub.add_parser("inspect-gse137554"); p.add_argument("--annotation", type=Path, required=True); p.add_argument("--h5", type=Path, required=True)
     args = ap.parse_args()
     if args.cmd == "prepare": print(json.dumps(prepare_gse92872(args.expression, args.out, args.genes), indent=2))
     elif args.cmd == "train": print(json.dumps(train_model(args.prepared, args.out, args.shrinkage), indent=2))
+    elif args.cmd == "prepare-gse314342":
+        from .gse314342 import build_gse314342_model
+        print(json.dumps(build_gse314342_model(args.de_h5ad, args.out, args.targets, args.genes), indent=2))
     elif args.cmd == "predict": predict(args.model, args.condition, parse_perturbations(args.perturb), args.out_dir)
     else: print(json.dumps(inspect_gse137554(args.annotation, args.h5), indent=2))
 
