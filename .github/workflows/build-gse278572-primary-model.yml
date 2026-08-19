@@ -1,0 +1,40 @@
+name: Build GSE278572 primary context model
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: python -m pip install -e . openpyxl
+      - name: Download published processed sources
+        run: |
+          curl -L --fail --retry 5 -o data_tables.zip 'https://zenodo.org/records/13924126/files/data_tables.zip?download=1'
+          curl -L --fail --retry 5 -o genome_wide_screens.zip 'https://zenodo.org/records/5784651/files/Genome-wide-screens.zip?download=1'
+          echo '886ed0fea0b9dc0625355c2e4928077c  data_tables.zip' | md5sum -c -
+          echo 'e0392eb7b2512720bb8cbf705ce9854f  genome_wide_screens.zip' | md5sum -c -
+      - name: Build hybrid primary context model
+        run: |
+          virtual-t-cell prepare-primary-context \
+            --data-tables-zip data_tables.zip \
+            --screens-zip genome_wide_screens.zip \
+            --fallback-model models/gse314342_primary_cd4_virtual_t_cell.npz \
+            --out models/gse278572_primary_context_virtual_t_cell.npz
+      - name: End-to-end prediction
+        run: |
+          virtual-t-cell predict --model models/gse278572_primary_context_virtual_t_cell.npz \
+            --condition Teff_Stimulated --perturb MED12 --out-dir smoke
+          test -s smoke/gene_predictions.csv
+          test -s smoke/phenotype_predictions.csv
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gse278572-primary-context-model
+          path: models/gse278572_primary_context_virtual_t_cell*
+          retention-days: 30

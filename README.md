@@ -58,6 +58,12 @@ virtual-t-cell analyze-tcr `
 
 仓库不直接存放数 GB 的单细胞原始矩阵；构建工作流从官方公开 S3 数据源下载。已经通过下载、构建和真实预测冒烟测试的紧凑模型存放在 `models/gse314342_primary_cd4_virtual_t_cell.npz`，同时也作为 GitHub Actions artifact 发布。
 
+## v0.4 主数据集：GSE278572
+
+当前主模型改为 [GSE278572](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE278572) 原代人 CD4⁺ Treg/Teff Perturb-CITE-seq。模型优先使用作者在 [Zenodo 13924126](https://zenodo.org/records/13924126) 发布的 S8 激活评分、S9 伪批量差异表达和 S14 细胞元数据；以 [Zenodo 5784651](https://zenodo.org/records/5784651) 的 CRISPRa/CRISPRi IL2、IFNG 全基因组筛选作为独立表型校准；对于主数据未覆盖的靶点，回退到 GSE314342 全基因组 CD4⁺ T 细胞模型。
+
+四个状态为 `Teff_Resting`、`Teff_Stimulated`、`Treg_Resting`、`Treg_Stimulated`。预测除基因与通路文件外，还输出 `phenotype_predictions.csv`，记录 Zenodo 5784651 支持的 IL2/IFNG CRISPRa/i 表型及 FDR。
+
 ## 快速运行
 
 ```bash

@@ -242,6 +242,18 @@ def predict(model_path: Path, condition: str, perturbations: list[tuple[str, flo
                        "uncertainty_se": np.sqrt(variance)})
     df.reindex(df.delta.abs().sort_values(ascending=False).index).to_csv(out_dir / "gene_predictions.csv", index=False)
     pathway_scores(m["genes"], delta).to_csv(out_dir / "pathway_predictions.csv", index=False)
+    if "screen_targets" in m.files:
+        available = m["screen_targets"].astype(str).tolist()
+        phenotype_rows = []
+        for target, strength in perturbations:
+            target = target.upper()
+            if target in available:
+                ti = available.index(target)
+                for pi, phenotype in enumerate(m["screen_phenotypes"].astype(str)):
+                    phenotype_rows.append({"target": target, "phenotype": phenotype,
+                        "screen_log_fold_change": float(m["screen_lfc"][pi, ti]) * float(strength),
+                        "screen_fdr": float(m["screen_fdr"][pi, ti]), "source": "Zenodo 5784651"})
+        pd.DataFrame(phenotype_rows).to_csv(out_dir / "phenotype_predictions.csv", index=False)
     (out_dir / "prediction_metadata.json").write_text(json.dumps({"condition": condition, "perturbations": modes,
         "interpretation": "Transcriptomic hypothesis; not a clinical efficacy estimate."}, indent=2), encoding="utf-8")
 
@@ -278,6 +290,7 @@ def main():
     p = sub.add_parser("train"); p.add_argument("--prepared", type=Path, required=True); p.add_argument("--out", type=Path, required=True); p.add_argument("--shrinkage", type=float, default=20)
     p = sub.add_parser("prepare-gse314342"); p.add_argument("--de-h5ad", type=Path, required=True); p.add_argument("--out", type=Path, required=True); p.add_argument("--targets", type=int, default=512); p.add_argument("--genes", type=int, default=2048)
     p = sub.add_parser("prepare-tcr"); p.add_argument("--vdjdb", type=Path, required=True); p.add_argument("--out", type=Path, required=True)
+    p = sub.add_parser("prepare-primary-context"); p.add_argument("--data-tables-zip", type=Path, required=True); p.add_argument("--screens-zip", type=Path, required=True); p.add_argument("--fallback-model", type=Path, required=True); p.add_argument("--out", type=Path, required=True)
     p = sub.add_parser("predict-tcr"); p.add_argument("--database", type=Path, required=True); p.add_argument("--cdr3-beta"); p.add_argument("--cdr3-alpha"); p.add_argument("--max-distance", type=int, default=1); p.add_argument("--top", type=int, default=25); p.add_argument("--out", type=Path, required=True)
     p = sub.add_parser("analyze-tcr"); p.add_argument("--contigs", type=Path, required=True); p.add_argument("--out-dir", type=Path, required=True)
     p = sub.add_parser("predict"); p.add_argument("--model", type=Path, required=True); p.add_argument("--condition", required=True); p.add_argument("--perturb", nargs="+", required=True); p.add_argument("--out-dir", type=Path, required=True)
@@ -291,6 +304,9 @@ def main():
     elif args.cmd == "prepare-tcr":
         from .tcr import build_vdjdb
         print(json.dumps(build_vdjdb(args.vdjdb, args.out), indent=2))
+    elif args.cmd == "prepare-primary-context":
+        from .primary_context import build_primary_context_model
+        print(json.dumps(build_primary_context_model(args.data_tables_zip, args.screens_zip, args.fallback_model, args.out), indent=2))
     elif args.cmd == "predict-tcr":
         from .tcr import predict_tcr
         print(json.dumps(predict_tcr(args.database, args.out, args.cdr3_beta, args.cdr3_alpha, args.max_distance, args.top), indent=2))
