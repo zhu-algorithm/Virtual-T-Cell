@@ -12,11 +12,19 @@ def head_gzip(path: Path, rows: int = 3) -> list[str]:
 
 def main() -> None:
     root = Path("multiomics_raw")
+    with (root / "proteinGroups.txt").open("rt", errors="replace") as handle:
+        header = handle.readline().rstrip("\n").split("\t")
+        preview_rows = [dict(zip(header, handle.readline().rstrip("\n").split("\t"))) for _ in range(5)]
     report = {
         "protein_projects": {},
         "protein_groups_head": (root / "proteinGroups.txt").open(
             "rt", errors="replace"
         ).readline().rstrip("\n").split("\t"),
+        "protein_identifier_preview": [{
+            "protein_ids": row.get("Protein IDs", ""),
+            "majority_protein_ids": row.get("Majority protein IDs", ""),
+            "fasta_headers": row.get("Fasta headers", "")
+        } for row in preview_rows],
         "genomics_head": head_gzip(root / "QTD000031.permuted.tsv.gz"),
         "methylation_head": head_gzip(root / "GSE174666_processed.txt.gz", 2),
     }
