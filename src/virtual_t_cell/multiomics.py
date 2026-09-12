@@ -75,7 +75,7 @@ def _methylation_evidence(matrix_path: Path, manifest_path: Path) -> pd.DataFram
         chunk["ID_REF"] = chunk["ID_REF"].astype(str).str.strip('"')
         value_cols = [c for c in chunk if c != "ID_REF" and "Detection Pval" not in c]
         pval_cols = [f"{c} Detection Pval" for c in value_cols]
-        values = chunk[value_cols].apply(pd.to_numeric, errors="coerce").to_numpy(float)
+        values = chunk[value_cols].apply(pd.to_numeric, errors="coerce").to_numpy(float).copy()
         pvals = chunk[pval_cols].apply(pd.to_numeric, errors="coerce").to_numpy(float)
         values[pvals > 0.01] = np.nan
         mean_beta = np.nanmean(values, axis=1)
