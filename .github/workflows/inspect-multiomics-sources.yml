@@ -12,12 +12,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: python -m pip install pandas openpyxl
       - name: Download public processed sources
         run: |
           mkdir multiomics_raw
-          curl -L --fail --retry 5 -o multiomics_raw/jem_20211295_datas2.xlsx \
-            'https://cdn.rupress.org/rup/content_public/journal/jem/219/2/10.1084_jem.20211295/4/jem_20211295_datas2.xlsx'
+          curl -L --fail --retry 5 -o multiomics_raw/PXD021250_files.json \
+            'https://www.ebi.ac.uk/pride/ws/archive/v2/projects/PXD021250/files'
+          curl -L --fail --retry 5 -o multiomics_raw/PXD025174_files.json \
+            'https://www.ebi.ac.uk/pride/ws/archive/v2/projects/PXD025174/files'
           curl -L --fail --retry 5 -o multiomics_raw/QTD000031.permuted.tsv.gz \
             'https://ftp.ebi.ac.uk/pub/databases/spot/eQTL/sumstats/QTS000002/QTD000031/QTD000031.permuted.tsv.gz'
           curl -L --fail --retry 5 -o multiomics_raw/GSE174666_processed.txt.gz \
