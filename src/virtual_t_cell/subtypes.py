@@ -75,3 +75,34 @@ def build_subtype_model(base_model: Path, dice_tpm: Path, hgnc: Path, out: Path)
     }
     out.with_suffix(".metrics.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
     return summary
+
+
+def add_aggregate_subtypes(base_model: Path, out: Path) -> dict:
+    """Add Treg and CD8 aggregate choices to an already validated subtype model."""
+    base = np.load(base_model, allow_pickle=False)
+    names = base["subtypes"].astype(str).tolist()
+    tpm = base["subtype_reference_tpm"].astype(np.float32)
+    offset = base["subtype_baseline_offset"].astype(np.float32)
+    additions = {
+        "Treg": ("Treg_naive", "Treg_memory"),
+        "CD8": ("CD8_naive", "CD8_naive_activated"),
+    }
+    for name, members in additions.items():
+        if name in names:
+            continue
+        idx = [names.index(member) for member in members]
+        names.append(name)
+        tpm = np.vstack([tpm, tpm[idx].mean(axis=0)])
+        offset = np.vstack([offset, offset[idx].mean(axis=0)])
+    arrays = {key: base[key] for key in base.files}
+    arrays.update({"subtypes": np.asarray(names), "subtype_reference_tpm": tpm,
+                   "subtype_baseline_offset": offset})
+    np.savez_compressed(out, **arrays)
+    shared = tpm.max(axis=0) > 0
+    summary = {"model": "T-cell perturbation model with sorted-cell subtype context",
+               "subtype_source": "DICE Database mean TPM", "subtypes": names,
+               "subtype_count": len(names), "model_genes": len(base["genes"]),
+               "genes_with_subtype_expression": int(shared.sum()),
+               "perturbation_effects_are_subtype_specific": False, "clinical_use": False}
+    out.with_suffix(".metrics.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    return summary

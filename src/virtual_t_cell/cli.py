@@ -347,6 +347,7 @@ def main():
     p = sub.add_parser("prepare-primary-context"); p.add_argument("--data-tables-zip", type=Path, required=True); p.add_argument("--screens-zip", type=Path, required=True); p.add_argument("--fallback-model", type=Path, required=True); p.add_argument("--gse92872-model", type=Path, required=True); p.add_argument("--out", type=Path, required=True)
     p = sub.add_parser("prepare-multiomics"); p.add_argument("--base-model", type=Path, required=True); p.add_argument("--protein-groups", type=Path, required=True); p.add_argument("--eqtl", type=Path, required=True); p.add_argument("--methylation", type=Path, required=True); p.add_argument("--epic-manifest", type=Path, required=True); p.add_argument("--hgnc", type=Path, required=True); p.add_argument("--out", type=Path, required=True)
     p = sub.add_parser("prepare-subtypes"); p.add_argument("--base-model", type=Path, required=True); p.add_argument("--dice-tpm", type=Path, required=True); p.add_argument("--hgnc", type=Path, required=True); p.add_argument("--out", type=Path, required=True)
+    p = sub.add_parser("add-subtype-aggregates"); p.add_argument("--base-model", type=Path, required=True); p.add_argument("--out", type=Path, required=True)
     p = sub.add_parser("predict-tcr"); p.add_argument("--database", type=Path, required=True); p.add_argument("--cdr3-beta"); p.add_argument("--cdr3-alpha"); p.add_argument("--max-distance", type=int, default=1); p.add_argument("--top", type=int, default=25); p.add_argument("--out", type=Path, required=True)
     p = sub.add_parser("analyze-tcr"); p.add_argument("--contigs", type=Path, required=True); p.add_argument("--out-dir", type=Path, required=True)
     p = sub.add_parser("predict"); p.add_argument("--model", type=Path, required=True); p.add_argument("--condition", required=True); p.add_argument("--subtype"); p.add_argument("--perturb", nargs="+", required=True); p.add_argument("--out-dir", type=Path, required=True)
@@ -370,6 +371,9 @@ def main():
     elif args.cmd == "prepare-subtypes":
         from .subtypes import build_subtype_model
         print(json.dumps(build_subtype_model(args.base_model, args.dice_tpm, args.hgnc, args.out), indent=2))
+    elif args.cmd == "add-subtype-aggregates":
+        from .subtypes import add_aggregate_subtypes
+        print(json.dumps(add_aggregate_subtypes(args.base_model, args.out), indent=2))
     elif args.cmd == "predict-tcr":
         from .tcr import predict_tcr
         print(json.dumps(predict_tcr(args.database, args.out, args.cdr3_beta, args.cdr3_alpha, args.max_distance, args.top), indent=2))
