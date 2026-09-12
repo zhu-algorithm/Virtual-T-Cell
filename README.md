@@ -1,5 +1,21 @@
 # Virtual T Cell
 
+## 可视化界面
+
+Windows 用户可以双击 `run_visual_app.bat`。首次运行会安装界面依赖，随后浏览器自动打开。界面支持选择 30 种 T 细胞亚型、实验状态、敲除/抑制基因和扰动强度，并显示：
+
+- 上调和下调最明显的基因；
+- TCR、NFAT、NF-κB、JAK-STAT、细胞毒、耗竭等通路变化；
+- 蛋白组、eQTL 和甲基化组整合证据；
+- CSV 结果下载。
+
+命令行启动方式：
+
+```powershell
+python -m pip install -e ".[ui]"
+python -m streamlit run app.py
+```
+
 ## T-cell subtype model (v0.7)
 
 The subtype model separates **cell identity** from **experimental state**. It

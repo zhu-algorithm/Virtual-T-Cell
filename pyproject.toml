@@ -22,6 +22,7 @@ Repository = "https://github.com/zhu-algorithm/Virtual-T-Cell"
 [project.optional-dependencies]
 hdf5 = ["h5py>=3.10,<4"]
 atlas = ["anndata>=0.10,<1", "h5py>=3.10,<4", "scipy>=1.10,<2"]
+ui = ["streamlit>=1.40,<2", "altair>=5,<7"]
 
 [project.scripts]
 virtual-t-cell = "virtual_t_cell.cli:main"
