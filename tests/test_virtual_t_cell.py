@@ -16,6 +16,7 @@ TCR_DATABASE = ROOT / "models" / "vdjdb_2026_06_tcr_evidence.npz"
 CONTEXT_MODEL = ROOT / "models" / "gse278572_primary_context_virtual_t_cell.npz"
 MULTIOMICS_MODEL = ROOT / "models" / "tcell_multiomics_evidence.npz"
 SUBTYPE_MODEL = ROOT / "models" / "tcell_subtype_multiomics.npz"
+EXPANDED_SUBTYPE_MODEL = ROOT / "models" / "tcell_expanded_subtypes.npz"
 
 
 class VirtualTCellTests(unittest.TestCase):
@@ -107,6 +108,18 @@ class VirtualTCellTests(unittest.TestCase):
     def test_pathway_scores(self):
         result = pathway_scores(np.array(["LCK", "ZAP70", "FOS"]), np.array([-1.0, -0.5, 0.2]))
         self.assertIn("TCR_SIGNALING", result["pathway"].tolist())
+
+    def test_expanded_subtype_model(self):
+        if not EXPANDED_SUBTYPE_MODEL.exists():
+            self.skipTest("Expanded subtype artifact is built by its release workflow")
+        model = np.load(EXPANDED_SUBTYPE_MODEL, allow_pickle=False)
+        expected = {"Th22", "CD8_central_memory", "CD8_effector_memory", "CD8_TEMRA",
+                    "CD8_virtual_naive_memory", "CD4_memory", "MAIT", "gdT", "gdT_Vd2",
+                    "gdT_non_Vd2", "Treg_Th1", "Treg_Th17", "Treg_Th22"}
+        self.assertTrue(expected.issubset(set(model["subtypes"].astype(str))))
+        self.assertGreaterEqual(len(model["subtypes"]), 30)
+        self.assertGreaterEqual(int((model["subtype_reference_tpm"].max(axis=0) > 0).sum()), 2100)
+        self.assertEqual(model["subtype_donor_count"][model["subtypes"].tolist().index("MAIT")], 6)
 
 
 if __name__ == "__main__":

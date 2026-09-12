@@ -22,6 +22,24 @@ Use `--condition` for resting/stimulated context and `--subtype` for T-cell
 identity. Outputs include the DICE subtype TPM and subtype baseline offset for
 every response gene. These are research hypotheses, not clinical predictions.
 
+## Expanded subtype atlas (v0.8)
+
+`models/tcell_expanded_subtypes.npz` combines DICE with Human Protein Atlas
+Monaco profiles, HPA donor-level profiles, GSE80306, and GSE135390. It contains
+30 selectable contexts, adding CD4/CD8 memory, CD8 central memory, CD8 effector
+memory, CD4/CD8 TEMRA, CD8 virtual-naive memory, MAIT, total/Vd2/non-Vd2 gamma
+delta T cells, Th22, and Treg_Th1/Treg_Th2/Treg_Th17/Treg_Th22/Treg_Th1_17.
+Donor/replicate counts and expression variability are stored with the model.
+
+```bash
+virtual-t-cell predict \
+  --model models/tcell_expanded_subtypes.npz \
+  --condition Teff_Stimulated \
+  --subtype CD8_effector_memory \
+  --perturb ZAP70 \
+  --out-dir outputs/zap70_cd8_em
+```
+
 第三个独立算法平台：基于公开 T 细胞 Perturb-seq 数据预测单基因敲低/敲除或多靶点抑制后的转录组与信号通路变化。
 
 本仓库与“天然产物筛选”和“PD-L1 环肽”平台完全独立，拥有自己的源码、模型、依赖、测试和 CI。

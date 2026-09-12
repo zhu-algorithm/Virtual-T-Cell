@@ -11,6 +11,20 @@
   transferred perturbation effects into directly measured subtype-specific
   perturbation responses.
 
+## Expanded sorted T-cell references
+
+- Human Protein Atlas immune-cell Monaco summary and donor-level immune-cell
+  expression tables. HPA copyrightable database content is CC BY 4.0; cite the
+  Human Protein Atlas and the linked Monaco source as required by HPA.
+- GSE80306 processed RNA-seq counts: 21 sorted human CD8 T-cell samples,
+  including naive, central-memory, effector-memory, TEMRA, and virtual-naive
+  memory populations.
+- GSE135390 normalized expression: 33 sorted human CD4 T-cell samples from
+  three donors, covering Th1, Th2, Th17, Th1/17, Th22, naive CD4, and five
+  corresponding Treg phenotypes.
+- GSE135390 normalized-expression units are retained separately and are not
+  mislabeled or directly averaged with TPM.
+
 The software in this repository is MIT licensed. Third-party databases retain
 their original licenses and attribution requirements.
 

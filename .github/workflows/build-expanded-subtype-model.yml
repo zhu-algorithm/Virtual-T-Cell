@@ -1,0 +1,63 @@
+name: Build expanded T-cell subtype model
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: python -m pip install -e .
+      - name: Download HPA and GEO processed matrices
+        run: |
+          mkdir expanded_raw
+          curl -L --fail --retry 5 --max-time 900 -o expanded_raw/hpa_monaco.tsv.zip \
+            'https://www.proteinatlas.org/download/tsv/rna_immune_cell_monaco.tsv.zip'
+          curl -L --fail --retry 5 --max-time 900 -o expanded_raw/hpa_samples.tsv.zip \
+            'https://www.proteinatlas.org/download/tsv/rna_immune_cell_sample.tsv.zip'
+          curl -L --fail --retry 5 --max-time 300 -o expanded_raw/GSE80306_counts.txt.gz \
+            'https://ftp.ncbi.nlm.nih.gov/geo/series/GSE80nnn/GSE80306/suppl/GSE80306_RNAseq_counts.txt.gz'
+          curl -L --fail --retry 5 --max-time 300 -o expanded_raw/GSE135390_norm.csv.gz \
+            'https://ftp.ncbi.nlm.nih.gov/geo/series/GSE135nnn/GSE135390/suppl/GSE135390_norm_counts.csv.gz'
+      - name: Build expanded subtype model
+        run: |
+          virtual-t-cell expand-subtypes \
+            --base-model models/tcell_subtype_multiomics.npz \
+            --monaco expanded_raw/hpa_monaco.tsv.zip \
+            --hpa-samples expanded_raw/hpa_samples.tsv.zip \
+            --gse80306-counts expanded_raw/GSE80306_counts.txt.gz \
+            --gse135390-expression expanded_raw/GSE135390_norm.csv.gz \
+            --out models/tcell_expanded_subtypes.npz
+      - name: Validate all subtype contexts
+        run: |
+          python - <<'PY'
+          import numpy as np, subprocess
+          model = np.load('models/tcell_expanded_subtypes.npz')
+          assert len(model['subtypes']) >= 30
+          assert (model['protein_detection_fraction'] > 0).sum() >= 200
+          assert (model['eqtl_confidence'] > 0).sum() >= 1500
+          for subtype in model['subtypes'].astype(str):
+              subprocess.run(['virtual-t-cell', 'predict', '--model', 'models/tcell_expanded_subtypes.npz',
+                  '--condition', 'Teff_Stimulated', '--subtype', subtype, '--perturb', 'ZAP70',
+                  '--out-dir', f'smoke/{subtype}'], check=True)
+          PY
+      - name: Publish compact expanded model
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f models/tcell_expanded_subtypes.npz models/tcell_expanded_subtypes.metrics.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Publish expanded 30-subtype T-cell model v0.8'
+            git push
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tcell-expanded-subtype-model
+          path: models/tcell_expanded_subtypes*
+          retention-days: 30

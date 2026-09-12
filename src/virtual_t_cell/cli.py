@@ -259,6 +259,8 @@ def predict(model_path: Path, condition: str, perturbations: list[tuple[str, flo
         df["cell_subtype"] = subtype
         df["subtype_reference_tpm"] = subtype_tpm
         df["subtype_baseline_offset"] = subtype_offset
+        if "gse135390_normalized_expression" in m.files:
+            df["gse135390_normalized_expression"] = m["gse135390_normalized_expression"][si]
     df.reindex(df.delta.abs().sort_values(ascending=False).index).to_csv(out_dir / "gene_predictions.csv", index=False)
     pathway_scores(m["genes"], delta).to_csv(out_dir / "pathway_predictions.csv", index=False)
     if "screen_targets" in m.files:
@@ -348,6 +350,7 @@ def main():
     p = sub.add_parser("prepare-multiomics"); p.add_argument("--base-model", type=Path, required=True); p.add_argument("--protein-groups", type=Path, required=True); p.add_argument("--eqtl", type=Path, required=True); p.add_argument("--methylation", type=Path, required=True); p.add_argument("--epic-manifest", type=Path, required=True); p.add_argument("--hgnc", type=Path, required=True); p.add_argument("--out", type=Path, required=True)
     p = sub.add_parser("prepare-subtypes"); p.add_argument("--base-model", type=Path, required=True); p.add_argument("--dice-tpm", type=Path, required=True); p.add_argument("--hgnc", type=Path, required=True); p.add_argument("--out", type=Path, required=True)
     p = sub.add_parser("add-subtype-aggregates"); p.add_argument("--base-model", type=Path, required=True); p.add_argument("--out", type=Path, required=True)
+    p = sub.add_parser("expand-subtypes"); p.add_argument("--base-model", type=Path, required=True); p.add_argument("--monaco", type=Path, required=True); p.add_argument("--hpa-samples", type=Path, required=True); p.add_argument("--gse80306-counts", type=Path, required=True); p.add_argument("--gse135390-expression", type=Path, required=True); p.add_argument("--out", type=Path, required=True)
     p = sub.add_parser("predict-tcr"); p.add_argument("--database", type=Path, required=True); p.add_argument("--cdr3-beta"); p.add_argument("--cdr3-alpha"); p.add_argument("--max-distance", type=int, default=1); p.add_argument("--top", type=int, default=25); p.add_argument("--out", type=Path, required=True)
     p = sub.add_parser("analyze-tcr"); p.add_argument("--contigs", type=Path, required=True); p.add_argument("--out-dir", type=Path, required=True)
     p = sub.add_parser("predict"); p.add_argument("--model", type=Path, required=True); p.add_argument("--condition", required=True); p.add_argument("--subtype"); p.add_argument("--perturb", nargs="+", required=True); p.add_argument("--out-dir", type=Path, required=True)
@@ -374,6 +377,9 @@ def main():
     elif args.cmd == "add-subtype-aggregates":
         from .subtypes import add_aggregate_subtypes
         print(json.dumps(add_aggregate_subtypes(args.base_model, args.out), indent=2))
+    elif args.cmd == "expand-subtypes":
+        from .expanded_subtypes import build_expanded_subtype_model
+        print(json.dumps(build_expanded_subtype_model(args.base_model, args.monaco, args.hpa_samples, args.gse80306_counts, args.gse135390_expression, args.out), indent=2))
     elif args.cmd == "predict-tcr":
         from .tcr import predict_tcr
         print(json.dumps(predict_tcr(args.database, args.out, args.cdr3_beta, args.cdr3_alpha, args.max_distance, args.top), indent=2))
