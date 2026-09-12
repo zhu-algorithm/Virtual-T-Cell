@@ -13,7 +13,12 @@ import pandas as pd
 
 def _gene_from_fasta(value: object) -> str:
     match = re.search(r"(?:^|\s)GN=([^\s;]+)", str(value))
-    return match.group(1).upper() if match else ""
+    if match:
+        return match.group(1).upper()
+    # PXD021250 uses headers ending in a pipe plus gene symbol, e.g.
+    # ``sp|P31946|1433B_HUMAN 14-3-3 protein beta/alpha|YWHAB``.
+    suffixes = re.findall(r"\|([A-Za-z0-9.-]+)(?=;|$)", str(value))
+    return suffixes[0].upper() if suffixes else ""
 
 
 def _manifest_csv(path: Path) -> tuple[Path, int]:
