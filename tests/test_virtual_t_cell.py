@@ -15,6 +15,7 @@ PRIMARY_MODEL = ROOT / "models" / "gse314342_primary_cd4_virtual_t_cell.npz"
 TCR_DATABASE = ROOT / "models" / "vdjdb_2026_06_tcr_evidence.npz"
 CONTEXT_MODEL = ROOT / "models" / "gse278572_primary_context_virtual_t_cell.npz"
 MULTIOMICS_MODEL = ROOT / "models" / "tcell_multiomics_evidence.npz"
+SUBTYPE_MODEL = ROOT / "models" / "tcell_subtype_multiomics.npz"
 
 
 class VirtualTCellTests(unittest.TestCase):
@@ -88,6 +89,20 @@ class VirtualTCellTests(unittest.TestCase):
 
     def test_multi_target_parser(self):
         self.assertEqual(parse_perturbations(["LCK:0.8", "PTPN11:0.3"]), [("LCK", 0.8), ("PTPN11", 0.3)])
+
+    def test_subtype_model_and_prediction(self):
+        if not SUBTYPE_MODEL.exists():
+            self.skipTest("Subtype artifact is built by its release workflow")
+        model = np.load(SUBTYPE_MODEL, allow_pickle=False)
+        expected = {"Treg_naive", "Treg_memory", "Th17", "Th1", "Th2", "CD8_naive", "CD4_naive"}
+        self.assertTrue(expected.issubset(set(model["subtypes"].astype(str))))
+        self.assertGreaterEqual(int((model["subtype_reference_tpm"].max(axis=0) > 0).sum()), 1800)
+        with tempfile.TemporaryDirectory() as tmp:
+            predict(SUBTYPE_MODEL, "Teff_Stimulated", [("ZAP70", 1.0)], Path(tmp), "Th17")
+            result = pd.read_csv(Path(tmp) / "gene_predictions.csv")
+            metadata = json.loads((Path(tmp) / "prediction_metadata.json").read_text())
+            self.assertEqual(metadata["cell_subtype"], "Th17")
+            self.assertIn("subtype_reference_tpm", result)
 
     def test_pathway_scores(self):
         result = pathway_scores(np.array(["LCK", "ZAP70", "FOS"]), np.array([-1.0, -0.5, 0.2]))

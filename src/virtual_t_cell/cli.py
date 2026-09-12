@@ -221,7 +221,8 @@ def pathway_scores(genes, delta):
     return pd.DataFrame(result).sort_values("delta_score", ascending=False)
 
 
-def predict(model_path: Path, condition: str, perturbations: list[tuple[str, float]], out_dir: Path):
+def predict(model_path: Path, condition: str, perturbations: list[tuple[str, float]], out_dir: Path,
+            subtype: str | None = None):
     m = np.load(model_path, allow_pickle=False)
     conds = m["conditions"].tolist()
     if condition not in conds:
@@ -235,11 +236,29 @@ def predict(model_path: Path, condition: str, perturbations: list[tuple[str, flo
         delta += float(strength) * effect
         variance += (float(strength) * unc) ** 2
         modes.append({"target": target.upper(), "strength": float(strength), "mode": mode})
-    pred = np.maximum(m["baseline"][ci] + delta, 0)
+    baseline = m["baseline"][ci].astype(np.float32).copy()
+    subtype_tpm = None
+    subtype_offset = None
+    if subtype is not None:
+        if "subtypes" not in m.files:
+            raise ValueError("This model does not contain T-cell subtype references")
+        subtype_names = m["subtypes"].astype(str).tolist()
+        if subtype not in subtype_names:
+            raise ValueError(f"subtype must be one of {subtype_names}")
+        si = subtype_names.index(subtype)
+        subtype_tpm = m["subtype_reference_tpm"][si]
+        subtype_offset = m["subtype_baseline_offset"][si]
+        weight = float(m["subtype_baseline_weight"].item())
+        baseline = np.maximum(baseline + weight * subtype_offset, 0)
+    pred = np.maximum(baseline + delta, 0)
     out_dir.mkdir(parents=True, exist_ok=True)
-    df = pd.DataFrame({"gene": m["genes"], "baseline_log1p_cp10k": m["baseline"][ci],
+    df = pd.DataFrame({"gene": m["genes"], "baseline_log1p_cp10k": baseline,
                        "predicted_log1p_cp10k": pred, "delta": delta,
                        "uncertainty_se": np.sqrt(variance)})
+    if subtype is not None:
+        df["cell_subtype"] = subtype
+        df["subtype_reference_tpm"] = subtype_tpm
+        df["subtype_baseline_offset"] = subtype_offset
     df.reindex(df.delta.abs().sort_values(ascending=False).index).to_csv(out_dir / "gene_predictions.csv", index=False)
     pathway_scores(m["genes"], delta).to_csv(out_dir / "pathway_predictions.csv", index=False)
     if "screen_targets" in m.files:
@@ -287,7 +306,9 @@ def predict(model_path: Path, condition: str, perturbations: list[tuple[str, flo
             "evidence_layers": evidence_count,
         }).sort_values("integrated_multiomic_delta", key=abs, ascending=False).to_csv(
             out_dir / "multiomic_predictions.csv", index=False)
-    (out_dir / "prediction_metadata.json").write_text(json.dumps({"condition": condition, "perturbations": modes,
+    (out_dir / "prediction_metadata.json").write_text(json.dumps({"condition": condition,
+        "cell_subtype": subtype, "perturbations": modes,
+        "subtype_interpretation": "Subtype changes the baseline using DICE sorted-cell expression; perturbation effects are transferred, not subtype-specific measurements." if subtype else None,
         "interpretation": "Transcriptomic hypothesis; not a clinical efficacy estimate."}, indent=2), encoding="utf-8")
 
 
@@ -325,9 +346,10 @@ def main():
     p = sub.add_parser("prepare-tcr"); p.add_argument("--vdjdb", type=Path, required=True); p.add_argument("--out", type=Path, required=True)
     p = sub.add_parser("prepare-primary-context"); p.add_argument("--data-tables-zip", type=Path, required=True); p.add_argument("--screens-zip", type=Path, required=True); p.add_argument("--fallback-model", type=Path, required=True); p.add_argument("--gse92872-model", type=Path, required=True); p.add_argument("--out", type=Path, required=True)
     p = sub.add_parser("prepare-multiomics"); p.add_argument("--base-model", type=Path, required=True); p.add_argument("--protein-groups", type=Path, required=True); p.add_argument("--eqtl", type=Path, required=True); p.add_argument("--methylation", type=Path, required=True); p.add_argument("--epic-manifest", type=Path, required=True); p.add_argument("--hgnc", type=Path, required=True); p.add_argument("--out", type=Path, required=True)
+    p = sub.add_parser("prepare-subtypes"); p.add_argument("--base-model", type=Path, required=True); p.add_argument("--dice-tpm", type=Path, required=True); p.add_argument("--hgnc", type=Path, required=True); p.add_argument("--out", type=Path, required=True)
     p = sub.add_parser("predict-tcr"); p.add_argument("--database", type=Path, required=True); p.add_argument("--cdr3-beta"); p.add_argument("--cdr3-alpha"); p.add_argument("--max-distance", type=int, default=1); p.add_argument("--top", type=int, default=25); p.add_argument("--out", type=Path, required=True)
     p = sub.add_parser("analyze-tcr"); p.add_argument("--contigs", type=Path, required=True); p.add_argument("--out-dir", type=Path, required=True)
-    p = sub.add_parser("predict"); p.add_argument("--model", type=Path, required=True); p.add_argument("--condition", required=True); p.add_argument("--perturb", nargs="+", required=True); p.add_argument("--out-dir", type=Path, required=True)
+    p = sub.add_parser("predict"); p.add_argument("--model", type=Path, required=True); p.add_argument("--condition", required=True); p.add_argument("--subtype"); p.add_argument("--perturb", nargs="+", required=True); p.add_argument("--out-dir", type=Path, required=True)
     p = sub.add_parser("inspect-gse137554"); p.add_argument("--annotation", type=Path, required=True); p.add_argument("--h5", type=Path, required=True)
     args = ap.parse_args()
     if args.cmd == "prepare": print(json.dumps(prepare_gse92872(args.expression, args.out, args.genes), indent=2))
@@ -345,13 +367,16 @@ def main():
         from .multiomics import build_multiomics_model
         print(json.dumps(build_multiomics_model(args.base_model, args.protein_groups, args.eqtl,
             args.methylation, args.epic_manifest, args.hgnc, args.out), indent=2))
+    elif args.cmd == "prepare-subtypes":
+        from .subtypes import build_subtype_model
+        print(json.dumps(build_subtype_model(args.base_model, args.dice_tpm, args.hgnc, args.out), indent=2))
     elif args.cmd == "predict-tcr":
         from .tcr import predict_tcr
         print(json.dumps(predict_tcr(args.database, args.out, args.cdr3_beta, args.cdr3_alpha, args.max_distance, args.top), indent=2))
     elif args.cmd == "analyze-tcr":
         from .tcr import analyze_10x_repertoire
         print(json.dumps(analyze_10x_repertoire(args.contigs, args.out_dir), indent=2))
-    elif args.cmd == "predict": predict(args.model, args.condition, parse_perturbations(args.perturb), args.out_dir)
+    elif args.cmd == "predict": predict(args.model, args.condition, parse_perturbations(args.perturb), args.out_dir, args.subtype)
     else: print(json.dumps(inspect_gse137554(args.annotation, args.h5), indent=2))
 
 

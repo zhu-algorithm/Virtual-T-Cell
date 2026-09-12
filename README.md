@@ -1,5 +1,27 @@
 # Virtual T Cell
 
+## T-cell subtype model (v0.7)
+
+The subtype model separates **cell identity** from **experimental state**. It
+supports `CD4_naive`, `CD4_naive_activated`, `Treg_naive`, `Treg_memory`,
+`Tfh`, `Th1`, `Th1_17`, `Th17`, `Th2`, `CD8_naive`, and
+`CD8_naive_activated`. Baselines come from sorted human T-cell mean TPM in the
+DICE Database; perturbation responses still come from the public perturbation
+datasets described below.
+
+```bash
+virtual-t-cell predict \
+  --model models/tcell_subtype_multiomics.npz \
+  --condition Teff_Stimulated \
+  --subtype Th17 \
+  --perturb ZAP70 \
+  --out-dir outputs/zap70_th17
+```
+
+Use `--condition` for resting/stimulated context and `--subtype` for T-cell
+identity. Outputs include the DICE subtype TPM and subtype baseline offset for
+every response gene. These are research hypotheses, not clinical predictions.
+
 第三个独立算法平台：基于公开 T 细胞 Perturb-seq 数据预测单基因敲低/敲除或多靶点抑制后的转录组与信号通路变化。
 
 本仓库与“天然产物筛选”和“PD-L1 环肽”平台完全独立，拥有自己的源码、模型、依赖、测试和 CI。

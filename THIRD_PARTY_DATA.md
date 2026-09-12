@@ -1,5 +1,16 @@
 # Third-party TCR data
 
+## DICE T-cell subtype expression
+
+- Source: DICE Database, build dated 2022-02-25 (`mean_tpm_merged.csv`).
+- Use: sorted human immune-cell mean TPM reference for CD4 naive/activated,
+  naive and memory Treg, Tfh, Th1, Th1/17, Th17, Th2, and CD8
+  naive/activated contexts.
+- License: Creative Commons Attribution 4.0 (CC BY 4.0).
+- The subtype layer conditions expression baselines. It does not turn the
+  transferred perturbation effects into directly measured subtype-specific
+  perturbation responses.
+
 The software in this repository is MIT licensed. Third-party databases retain
 their original licenses and attribution requirements.
 
