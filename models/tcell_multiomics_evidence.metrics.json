@@ -1,7 +1,7 @@
 {
   "model": "cross-cohort T-cell multi-omics evidence fusion",
   "genes": 2151,
-  "protein_genes": 0,
+  "protein_genes": 231,
   "genomic_eGenes": 1602,
   "methylation_genes": 2012,
   "sources": [
