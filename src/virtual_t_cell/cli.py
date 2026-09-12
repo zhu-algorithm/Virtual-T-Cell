@@ -266,6 +266,27 @@ def predict(model_path: Path, condition: str, perturbations: list[tuple[str, flo
                     "pearson_top200_response_genes": float(m["validation_top200_pearson"][ci, ti]),
                     "shared_genes": len(m["validation_genes"]), "source": m["validation_source"].item()})
         pd.DataFrame(validation_rows).to_csv(out_dir / "cross_dataset_validation.csv", index=False)
+    if "multiomics_version" in m.files:
+        stimulated = condition.lower().endswith("stimulated") or "stim" in condition.lower()
+        protein_prior = np.nan_to_num(m["protein_activation_log2fc"], nan=0.0)
+        protein_detection = m["protein_detection_fraction"]
+        methylation = m["promoter_methylation"]
+        permissiveness = np.where(np.isfinite(methylation), 1.0 - methylation, 0.5)
+        protein_factor = 1.0 + (0.10 * np.tanh(protein_prior) if stimulated else 0.0)
+        epigenetic_factor = 0.5 + 0.5 * permissiveness
+        integrated_delta = delta * protein_factor * epigenetic_factor
+        evidence_count = (protein_detection > 0).astype(int) + (m["eqtl_confidence"] > 0).astype(int) + np.isfinite(methylation).astype(int)
+        pd.DataFrame({
+            "gene": m["genes"], "transcript_delta": delta,
+            "integrated_multiomic_delta": integrated_delta,
+            "protein_activation_log2fc": m["protein_activation_log2fc"],
+            "protein_detection_fraction": protein_detection,
+            "top_cd4_eqtl_variant": m["eqtl_variant"], "eqtl_beta": m["eqtl_beta"],
+            "eqtl_pvalue": m["eqtl_pvalue"], "promoter_methylation": methylation,
+            "methylation_probe_count": m["methylation_probe_count"],
+            "evidence_layers": evidence_count,
+        }).sort_values("integrated_multiomic_delta", key=abs, ascending=False).to_csv(
+            out_dir / "multiomic_predictions.csv", index=False)
     (out_dir / "prediction_metadata.json").write_text(json.dumps({"condition": condition, "perturbations": modes,
         "interpretation": "Transcriptomic hypothesis; not a clinical efficacy estimate."}, indent=2), encoding="utf-8")
 
@@ -303,6 +324,7 @@ def main():
     p = sub.add_parser("prepare-gse314342"); p.add_argument("--de-h5ad", type=Path, required=True); p.add_argument("--out", type=Path, required=True); p.add_argument("--targets", type=int, default=512); p.add_argument("--genes", type=int, default=2048)
     p = sub.add_parser("prepare-tcr"); p.add_argument("--vdjdb", type=Path, required=True); p.add_argument("--out", type=Path, required=True)
     p = sub.add_parser("prepare-primary-context"); p.add_argument("--data-tables-zip", type=Path, required=True); p.add_argument("--screens-zip", type=Path, required=True); p.add_argument("--fallback-model", type=Path, required=True); p.add_argument("--gse92872-model", type=Path, required=True); p.add_argument("--out", type=Path, required=True)
+    p = sub.add_parser("prepare-multiomics"); p.add_argument("--base-model", type=Path, required=True); p.add_argument("--protein-groups", type=Path, required=True); p.add_argument("--eqtl", type=Path, required=True); p.add_argument("--methylation", type=Path, required=True); p.add_argument("--epic-manifest", type=Path, required=True); p.add_argument("--hgnc", type=Path, required=True); p.add_argument("--out", type=Path, required=True)
     p = sub.add_parser("predict-tcr"); p.add_argument("--database", type=Path, required=True); p.add_argument("--cdr3-beta"); p.add_argument("--cdr3-alpha"); p.add_argument("--max-distance", type=int, default=1); p.add_argument("--top", type=int, default=25); p.add_argument("--out", type=Path, required=True)
     p = sub.add_parser("analyze-tcr"); p.add_argument("--contigs", type=Path, required=True); p.add_argument("--out-dir", type=Path, required=True)
     p = sub.add_parser("predict"); p.add_argument("--model", type=Path, required=True); p.add_argument("--condition", required=True); p.add_argument("--perturb", nargs="+", required=True); p.add_argument("--out-dir", type=Path, required=True)
@@ -319,6 +341,10 @@ def main():
     elif args.cmd == "prepare-primary-context":
         from .primary_context import build_primary_context_model
         print(json.dumps(build_primary_context_model(args.data_tables_zip, args.screens_zip, args.fallback_model, args.gse92872_model, args.out), indent=2))
+    elif args.cmd == "prepare-multiomics":
+        from .multiomics import build_multiomics_model
+        print(json.dumps(build_multiomics_model(args.base_model, args.protein_groups, args.eqtl,
+            args.methylation, args.epic_manifest, args.hgnc, args.out), indent=2))
     elif args.cmd == "predict-tcr":
         from .tcr import predict_tcr
         print(json.dumps(predict_tcr(args.database, args.out, args.cdr3_beta, args.cdr3_alpha, args.max_distance, args.top), indent=2))

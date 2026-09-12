@@ -1,0 +1,52 @@
+name: Build T-cell multi-omics model
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: python -m pip install -e .
+      - name: Download public protein, genome and methylation sources
+        run: |
+          mkdir multiomics_raw
+          curl -L --fail --retry 5 -o multiomics_raw/PXD021250_files.json \
+            'https://www.ebi.ac.uk/pride/ws/archive/v2/projects/PXD021250/files'
+          protein_url=$(python -c "import json; x=json.load(open('multiomics_raw/PXD021250_files.json')); r=next(i for i in x if i['fileName']=='proteinGroups.txt'); print(next(p['value'] for p in r['publicFileLocations'] if p['name']=='FTP Protocol').replace('ftp://','https://'))")
+          curl -L --fail --retry 5 -o multiomics_raw/proteinGroups.txt "$protein_url"
+          curl -L --fail --retry 5 -o multiomics_raw/QTD000031.permuted.tsv.gz \
+            'https://ftp.ebi.ac.uk/pub/databases/spot/eQTL/sumstats/QTS000002/QTD000031/QTD000031.permuted.tsv.gz'
+          curl -L --fail --retry 5 -o multiomics_raw/hgnc_complete_set.txt \
+            'https://storage.googleapis.com/public-download-files/hgnc/tsv/tsv/hgnc_complete_set.txt'
+          curl -L --fail --retry 5 -o multiomics_raw/GSE174666_processed.txt.gz \
+            'https://ftp.ncbi.nlm.nih.gov/geo/series/GSE174nnn/GSE174666/suppl/GSE174666_processed.txt.gz'
+          curl -L --fail --retry 5 -o multiomics_raw/epic_manifest.zip \
+            'https://webdata.illumina.com/downloads/productfiles/methylationEPIC/infinium-methylationepic-v-1-0-b5-manifest-file-csv.zip'
+      - name: Build compact multi-omics model
+        run: |
+          virtual-t-cell prepare-multiomics \
+            --base-model models/gse278572_primary_context_virtual_t_cell.npz \
+            --protein-groups multiomics_raw/proteinGroups.txt \
+            --eqtl multiomics_raw/QTD000031.permuted.tsv.gz \
+            --methylation multiomics_raw/GSE174666_processed.txt.gz \
+            --epic-manifest multiomics_raw/epic_manifest.zip \
+            --hgnc multiomics_raw/hgnc_complete_set.txt \
+            --out models/tcell_multiomics_evidence.npz
+      - name: End-to-end multi-omics prediction
+        run: |
+          virtual-t-cell predict --model models/tcell_multiomics_evidence.npz \
+            --condition Teff_Stimulated --perturb ZAP70 --out-dir smoke
+          test -s smoke/gene_predictions.csv
+          test -s smoke/multiomic_predictions.csv
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tcell-multiomics-model
+          path: models/tcell_multiomics_evidence*
+          retention-days: 30
