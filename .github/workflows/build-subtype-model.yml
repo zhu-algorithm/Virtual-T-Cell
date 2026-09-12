@@ -30,7 +30,7 @@ jobs:
             --out models/tcell_subtype_multiomics.npz
       - name: Validate requested subtypes end to end
         run: |
-          for subtype in Treg_naive Treg_memory Th17 Th1 Th2 CD8_naive CD4_naive; do
+          for subtype in Treg Treg_naive Treg_memory Th17 Th1 Th2 CD8 CD8_naive CD4_naive; do
             virtual-t-cell predict --model models/tcell_subtype_multiomics.npz \
               --condition Teff_Stimulated --subtype "$subtype" --perturb ZAP70 \
               --out-dir "smoke/$subtype"

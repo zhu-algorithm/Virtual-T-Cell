@@ -3,9 +3,9 @@
 ## T-cell subtype model (v0.7)
 
 The subtype model separates **cell identity** from **experimental state**. It
-supports `CD4_naive`, `CD4_naive_activated`, `Treg_naive`, `Treg_memory`,
+supports `CD4_naive`, `CD4_naive_activated`, `Treg`, `Treg_naive`, `Treg_memory`,
 `Tfh`, `Th1`, `Th1_17`, `Th17`, `Th2`, `CD8_naive`, and
-`CD8_naive_activated`. Baselines come from sorted human T-cell mean TPM in the
+`CD8`, `CD8_naive_activated`. Baselines come from sorted human T-cell mean TPM in the
 DICE Database; perturbation responses still come from the public perturbation
 datasets described below.
 

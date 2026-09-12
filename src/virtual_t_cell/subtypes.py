@@ -9,17 +9,19 @@ import pandas as pd
 
 
 DICE_SUBTYPES = {
-    "CD4_naive": "T cell, CD4, naive",
-    "CD4_naive_activated": "T cell, CD4, naive [activated]",
-    "Treg_naive": "T cell, CD4, naive TREG",
-    "Treg_memory": "T cell, CD4, memory TREG",
-    "Tfh": "T cell, CD4, TFH",
-    "Th1": "T cell, CD4, TH1",
-    "Th1_17": "T cell, CD4, TH1/17",
-    "Th17": "T cell, CD4, TH17",
-    "Th2": "T cell, CD4, TH2",
-    "CD8_naive": "T cell, CD8, naive",
-    "CD8_naive_activated": "T cell, CD8, naive [activated]",
+    "CD4_naive": ("T cell, CD4, naive",),
+    "CD4_naive_activated": ("T cell, CD4, naive [activated]",),
+    "Treg": ("T cell, CD4, naive TREG", "T cell, CD4, memory TREG"),
+    "Treg_naive": ("T cell, CD4, naive TREG",),
+    "Treg_memory": ("T cell, CD4, memory TREG",),
+    "Tfh": ("T cell, CD4, TFH",),
+    "Th1": ("T cell, CD4, TH1",),
+    "Th1_17": ("T cell, CD4, TH1/17",),
+    "Th17": ("T cell, CD4, TH17",),
+    "Th2": ("T cell, CD4, TH2",),
+    "CD8": ("T cell, CD8, naive", "T cell, CD8, naive [activated]"),
+    "CD8_naive": ("T cell, CD8, naive",),
+    "CD8_naive_activated": ("T cell, CD8, naive [activated]",),
 }
 
 
@@ -37,12 +39,16 @@ def build_subtype_model(base_model: Path, dice_tpm: Path, hgnc: Path, out: Path)
         hgnc_frame["ensembl_gene_id"].fillna("").str.split(".").str[0],
         hgnc_frame["symbol"].fillna("").str.upper(),
     ))
-    dice = pd.read_csv(dice_tpm, usecols=["gene", *DICE_SUBTYPES.values()])
+    source_columns = list(dict.fromkeys(column for columns in DICE_SUBTYPES.values() for column in columns))
+    dice = pd.read_csv(dice_tpm, usecols=["gene", *source_columns])
     dice["symbol"] = dice["gene"].astype(str).str.split(".").str[0].map(gene_map).fillna("")
-    dice = dice[dice.symbol.ne("")].groupby("symbol", as_index=False)[list(DICE_SUBTYPES.values())].mean()
+    dice = dice[dice.symbol.ne("")].groupby("symbol", as_index=False)[source_columns].mean()
     aligned = pd.DataFrame({"symbol": genes}).merge(dice, on="symbol", how="left")
     subtype_names = list(DICE_SUBTYPES)
-    tpm = aligned[[DICE_SUBTYPES[name] for name in subtype_names]].fillna(0).to_numpy(np.float32).T
+    tpm = np.vstack([
+        aligned[list(DICE_SUBTYPES[name])].fillna(0).mean(axis=1).to_numpy(np.float32)
+        for name in subtype_names
+    ])
     log_tpm = np.log1p(tpm)
     offset = np.clip(log_tpm - log_tpm.mean(axis=0, keepdims=True), -2.0, 2.0).astype(np.float32)
     arrays = {key: base[key] for key in base.files}

@@ -94,7 +94,7 @@ class VirtualTCellTests(unittest.TestCase):
         if not SUBTYPE_MODEL.exists():
             self.skipTest("Subtype artifact is built by its release workflow")
         model = np.load(SUBTYPE_MODEL, allow_pickle=False)
-        expected = {"Treg_naive", "Treg_memory", "Th17", "Th1", "Th2", "CD8_naive", "CD4_naive"}
+        expected = {"Treg", "Treg_naive", "Treg_memory", "Th17", "Th1", "Th2", "CD8", "CD8_naive", "CD4_naive"}
         self.assertTrue(expected.issubset(set(model["subtypes"].astype(str))))
         self.assertGreaterEqual(int((model["subtype_reference_tpm"].max(axis=0) > 0).sum()), 1800)
         with tempfile.TemporaryDirectory() as tmp:
