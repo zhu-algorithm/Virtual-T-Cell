@@ -68,6 +68,24 @@ v0.5 同时整合两个 GEO 数据集：GSE278572 作为原代 Treg/Teff 主效�
 
 原始数据可通过 GitHub Actions 的 **Download and validate GEO sources** 工作流复现下载。工作流下载 GSE92872 的两个表达矩阵，以及 GSE278572 的 barcodes、features、3.6 GB Matrix Market 矩阵和 protospacer calls；随后生成包含文件大小、SHA-256、矩阵维度和行数的 `geo_download_manifest.json`。大型原始数据不纳入 Git 历史。
 
+## v0.6 跨队列多组学算法
+
+新增 `models/tcell_multiomics_evidence.npz`，在 v0.5 转录扰动模型上增加三个按 HGNC 基因符号对齐的证据层：
+
+- 蛋白组：PXD021250 原代人 CD4 T 细胞静息/激活定量蛋白组；
+- 基因组：eQTL Catalogue 重算的 BLUEPRINT 167 位供体 CD4 T 细胞首要 cis-eQTL（QTD000031）；
+- 甲基化组：GSE174666 的 57 个 CD4/CD8 naive 与 memory 亚群 EPIC 数据，以启动子 CpG 平均甲基化构建基因调控许可度。
+
+```powershell
+virtual-t-cell predict `
+  --model models\tcell_multiomics_evidence.npz `
+  --condition Teff_Stimulated `
+  --perturb ZAP70 `
+  --out-dir run_output\ZAP70_multiomics
+```
+
+除原有输出外会生成 `multiomic_predictions.csv`，包含转录变化、融合变化、蛋白激活差异、蛋白检出率、首要 CD4 eQTL 及效应、启动子甲基化和证据层数。融合变化为透明的机制证据加权值，不是同一供体配对多组学，也不是临床疗效或个体基因型预测。
+
 ## 快速运行
 
 ```bash

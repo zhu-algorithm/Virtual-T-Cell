@@ -14,6 +14,7 @@ MODEL = ROOT / "models" / "gse92872_virtual_t_cell.npz"
 PRIMARY_MODEL = ROOT / "models" / "gse314342_primary_cd4_virtual_t_cell.npz"
 TCR_DATABASE = ROOT / "models" / "vdjdb_2026_06_tcr_evidence.npz"
 CONTEXT_MODEL = ROOT / "models" / "gse278572_primary_context_virtual_t_cell.npz"
+MULTIOMICS_MODEL = ROOT / "models" / "tcell_multiomics_evidence.npz"
 
 
 class VirtualTCellTests(unittest.TestCase):
@@ -56,6 +57,23 @@ class VirtualTCellTests(unittest.TestCase):
         self.assertIn("LCK", model["targets"].tolist())
         self.assertEqual(model["baseline"].shape[-1], len(model["genes"]))
         self.assertEqual(model["effects"].shape[-1], len(model["genes"]))
+
+    def test_multiomics_model_and_prediction(self):
+        if not MULTIOMICS_MODEL.exists():
+            self.skipTest("Multi-omics artifact is built by its release workflow")
+        model = np.load(MULTIOMICS_MODEL, allow_pickle=False)
+        self.assertEqual(model["multiomics_version"].item(), "cross_cohort_v1")
+        self.assertEqual(model["protein_source"].item(), "PXD021250")
+        self.assertEqual(model["genomics_source"].item(), "BLUEPRINT_QTD000031")
+        self.assertEqual(model["methylation_source"].item(), "GSE174666")
+        self.assertGreaterEqual(int((model["protein_detection_fraction"] > 0).sum()), 200)
+        self.assertGreaterEqual(int((model["eqtl_confidence"] > 0).sum()), 1500)
+        self.assertGreaterEqual(int(np.isfinite(model["promoter_methylation"]).sum()), 2000)
+        with tempfile.TemporaryDirectory() as tmp:
+            predict(MULTIOMICS_MODEL, "Teff_Stimulated", [("ZAP70", 1.0)], Path(tmp))
+            result = pd.read_csv(Path(tmp) / "multiomic_predictions.csv")
+            self.assertGreater(len(result), 2000)
+            self.assertIn("integrated_multiomic_delta", result)
 
     def test_end_to_end_prediction(self):
         with tempfile.TemporaryDirectory() as tmp:
