@@ -1,0 +1,14 @@
+{
+  "model": "cross-cohort T-cell multi-omics evidence fusion",
+  "genes": 2151,
+  "protein_genes": 0,
+  "genomic_eGenes": 1602,
+  "methylation_genes": 2012,
+  "sources": [
+    "PXD021250",
+    "BLUEPRINT QTD000031",
+    "GSE174666"
+  ],
+  "paired_samples": false,
+  "clinical_use": false
+}
