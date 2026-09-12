@@ -39,9 +39,23 @@ def _read_manifest(path: Path) -> pd.DataFrame:
                        usecols=["IlmnID", "UCSC_RefGene_Name", "UCSC_RefGene_Group"])
 
 
-def _protein_evidence(path: Path) -> pd.DataFrame:
+def _protein_evidence(path: Path, hgnc_path: Path) -> pd.DataFrame:
     frame = pd.read_csv(path, sep="\t", low_memory=False)
     frame["gene"] = frame["Fasta headers"].map(_gene_from_fasta)
+    hgnc = pd.read_csv(hgnc_path, sep="\t", dtype=str, low_memory=False)
+    uniprot_to_gene = {}
+    for row in hgnc[["symbol", "uniprot_ids"]].dropna().itertuples(index=False):
+        for accession in str(row.uniprot_ids).split("|"):
+            uniprot_to_gene[accession] = str(row.symbol).upper()
+    def protein_id_gene(value: object) -> str:
+        for item in str(value).split(";"):
+            accession = item.split("|")[1] if item.count("|") >= 2 else item
+            accession = accession.split("-")[0]
+            if accession in uniprot_to_gene:
+                return uniprot_to_gene[accession]
+        return ""
+    missing = frame.gene.eq("")
+    frame.loc[missing, "gene"] = frame.loc[missing, "Majority protein IDs"].map(protein_id_gene)
     frame = frame[frame.gene.ne("")]
     activated = [c for c in frame if c.startswith("LFQ intensity Activated_")]
     naive = [c for c in frame if c.startswith("LFQ intensity Naive_")]
@@ -95,7 +109,7 @@ def build_multiomics_model(base_model: Path, protein_groups: Path, eqtl: Path,
     base = np.load(base_model, allow_pickle=False)
     genes = base["genes"].astype(str)
     table = pd.DataFrame({"gene": genes})
-    table = table.merge(_protein_evidence(protein_groups), on="gene", how="left")
+    table = table.merge(_protein_evidence(protein_groups, hgnc), on="gene", how="left")
     table = table.merge(_genomic_evidence(eqtl, hgnc), on="gene", how="left")
     table = table.merge(_methylation_evidence(methylation, epic_manifest), on="gene", how="left")
     arrays = {key: base[key] for key in base.files}
