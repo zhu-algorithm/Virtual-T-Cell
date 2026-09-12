@@ -1,0 +1,22 @@
+{
+  "model": "T-cell perturbation model with sorted-cell subtype context",
+  "subtype_source": "DICE Database mean TPM",
+  "subtypes": [
+    "CD4_naive",
+    "CD4_naive_activated",
+    "Treg_naive",
+    "Treg_memory",
+    "Tfh",
+    "Th1",
+    "Th1_17",
+    "Th17",
+    "Th2",
+    "CD8_naive",
+    "CD8_naive_activated"
+  ],
+  "subtype_count": 11,
+  "model_genes": 2151,
+  "genes_with_subtype_expression": 2077,
+  "perturbation_effects_are_subtype_specific": false,
+  "clinical_use": false
+}
