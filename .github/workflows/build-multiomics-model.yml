@@ -2,7 +2,7 @@ name: Build T-cell multi-omics model
 on:
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -45,6 +45,13 @@ jobs:
             --condition Teff_Stimulated --perturb ZAP70 --out-dir smoke
           test -s smoke/gene_predictions.csv
           test -s smoke/multiomic_predictions.csv
+      - name: Publish compact model
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f models/tcell_multiomics_evidence.npz models/tcell_multiomics_evidence.metrics.json
+          git commit -m 'Publish T-cell multi-omics model v0.6'
+          git push
       - uses: actions/upload-artifact@v4
         with:
           name: tcell-multiomics-model
