@@ -12,9 +12,11 @@
     "Th17",
     "Th2",
     "CD8_naive",
-    "CD8_naive_activated"
+    "CD8_naive_activated",
+    "Treg",
+    "CD8"
   ],
-  "subtype_count": 11,
+  "subtype_count": 13,
   "model_genes": 2151,
   "genes_with_subtype_expression": 2077,
   "perturbation_effects_are_subtype_specific": false,
