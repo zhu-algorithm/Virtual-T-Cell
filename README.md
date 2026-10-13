@@ -1,5 +1,72 @@
 # Virtual T Cell
 
+## v0.11：多器官虚拟免疫系统
+
+新增相互连接的骨髓、胸腺、PBMC/血液、脾脏、甲状腺、肿瘤，以及颈部、
+腋窝、纵隔、肠系膜和盆腔淋巴结。肿瘤部位决定解剖引流路径：甲状腺→颈部、
+肺→纵隔、乳腺→腋窝、结直肠→肠系膜、盆腔肿瘤→盆腔淋巴结。模型显式记录
+抗原运输、胸腺输出、免疫监视、淋巴回流、克隆扩增、PBMC 迁移、肿瘤归巢、
+耗竭和杀伤。
+
+```bash
+virtual-t-cell simulate-multi-organ \
+  --tumor-site thyroid --days 60 \
+  --hla-match 0.85 --tcr-affinity 0.7 --tumor-mhc-i 0.75 \
+  --therapy combination --out-dir outputs/multi_organ
+```
+
+输出包括逐器官细胞轨迹、每条迁移事件、抗原负荷、引流淋巴结、肿瘤浸润
+抗原特异 CD8、识别强度和杀伤通量。当前结构用于科研模拟；各器官的绝对规模、
+迁移率和治疗参数仍需同一供体的纵向多器官数据校准。
+
+## v0.10：完整肿瘤免疫循环
+
+新增从 T 细胞生成到肿瘤杀伤的可执行闭环：骨髓输出 → 胸腺 DN/DP/CD8-SP
+成熟与正/负选择 → 抗原特异性初始克隆 → 肿瘤抗原释放与 DC 摄取 → TDLN
+启动及克隆扩增 → PBMC/血液迁移 → 肿瘤浸润 → TCR–pMHC-I 特异识别 →
+肿瘤杀伤 → 抗原反馈。识别同时受 HLA 匹配、TCR 亲和力、抗原免疫原性和肿瘤
+MHC-I 控制；支持 PD-1 阻断、肿瘤放疗及联合治疗。
+
+```bash
+virtual-t-cell simulate-immune-cycle \
+  --days 42 --tumor-burden 0.55 \
+  --antigen-immunogenicity 0.7 --hla-match 0.85 \
+  --tcr-affinity 0.7 --tumor-mhc-i 0.75 \
+  --therapy anti_PD1 --out-dir outputs/immune_cycle
+```
+
+输出逐日器官/细胞状态、13 个环节的瞬时与累计通量、肿瘤负荷和累计杀伤。
+当前抗原、HLA 与 TCR 是 0–1 的机制分数；下一阶段应接入真实 HLA 分型、肿瘤
+突变/新抗原、免疫肽组和 TCR–pMHC 实验数据，不能将当前结果用作患者疗效预测。
+
+## v0.9：公共多组学 TDLN 虚拟器官
+
+仓库现在同时提供细胞级 Virtual T Cell 与器官级肿瘤引流淋巴结（TDLN）模型。
+TDLN 校准文件整合 GSE316782 的 32,509 个淋巴结细胞和 126 个 CITE-seq
+蛋白、GSE212797 的 15,421 条 productive TCR contig，以及 GSE239514 的
+25 个 TDLN bulk RNA 样本。它初始化 19 类细胞、6 个空间区和 8 条细胞通讯轴。
+
+```bash
+virtual-t-cell simulate-tdln \
+  --model models/tdln_public_calibration_v1.json \
+  --days 21 --tumor-burden 0.45 --therapy anti_PD1 --metastasis \
+  --out-dir outputs/tdln_anti_pd1
+```
+
+从下载的公开 GEO 表重建校准：
+
+```bash
+virtual-t-cell download-tdln --out-dir data/tdln_raw
+virtual-t-cell prepare-tdln \
+  --raw-dir data/tdln_raw \
+  --out models/tdln_public_calibration_v1.json
+```
+
+校准模型记录完整 accession 来源、患者留一组成验证、蛋白均值、TCR 多样性和
+bulk RNA 程序范围。day 0 的免疫组成与蛋白活化来自真实公共队列；结构细胞小比例
+先验、空间归巢和后续动力学仍是机制假设，不是临床数字孪生。来源清单位于
+`data_sources/tdln_sources.json`。
+
 ## 可视化界面
 
 Windows 用户可以双击 `run_visual_app.bat`。首次运行会安装界面依赖，随后浏览器自动打开。界面支持选择 30 种 T 细胞亚型、实验状态、敲除/抑制基因和扰动强度，并显示：

@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "virtual-t-cell"
-version = "0.8.0"
-description = "A reproducible T-cell transcriptomic perturbation simulator trained on public CROP-seq data."
+version = "0.9.0"
+description = "Public-data virtual T-cell and tumor-draining lymph-node research simulators."
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
