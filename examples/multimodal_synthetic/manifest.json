@@ -1,0 +1,22 @@
+{
+  "schema_version": "virtual-t-cell.multimodal.v1",
+  "dataset_name": "simulated_multimodal_t_cells",
+  "data_origin": "simulated",
+  "paired_measurements": true,
+  "modalities": {
+    "rna": {
+      "representation": "simulated log1p-like expression"
+    },
+    "atac": {
+      "representation": "simulated accessibility values"
+    },
+    "protein": {
+      "representation": "simulated CLR-like CITE-seq values"
+    },
+    "tcr": {
+      "representation": "simulated hashed 3-mer feature embedding"
+    }
+  },
+  "warning": "No row or value in this example comes from a patient, donor, assay, or public dataset.",
+  "seed": 7
+}

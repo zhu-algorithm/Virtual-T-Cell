@@ -354,6 +354,10 @@ def main():
     p = sub.add_parser("predict-tcr"); p.add_argument("--database", type=Path, required=True); p.add_argument("--cdr3-beta"); p.add_argument("--cdr3-alpha"); p.add_argument("--max-distance", type=int, default=1); p.add_argument("--top", type=int, default=25); p.add_argument("--out", type=Path, required=True)
     p = sub.add_parser("analyze-tcr"); p.add_argument("--contigs", type=Path, required=True); p.add_argument("--out-dir", type=Path, required=True)
     p = sub.add_parser("predict"); p.add_argument("--model", type=Path, required=True); p.add_argument("--condition", required=True); p.add_argument("--subtype"); p.add_argument("--perturb", nargs="+", required=True); p.add_argument("--out-dir", type=Path, required=True)
+    p = sub.add_parser("generate-multimodal-example"); p.add_argument("--out-dir", type=Path, required=True); p.add_argument("--cells", type=int, default=120); p.add_argument("--seed", type=int, default=7)
+    p = sub.add_parser("validate-multimodal"); p.add_argument("--dataset", type=Path, required=True)
+    p = sub.add_parser("train-multimodal"); p.add_argument("--dataset", type=Path, required=True); p.add_argument("--out", type=Path, required=True); p.add_argument("--latent-dim", type=int, default=8); p.add_argument("--ridge", type=float, default=1.0)
+    p = sub.add_parser("predict-multimodal"); p.add_argument("--model", type=Path, required=True); p.add_argument("--dataset", type=Path, required=True); p.add_argument("--cell-id", required=True); p.add_argument("--perturbation", required=True); p.add_argument("--strength", type=float, default=1.0); p.add_argument("--time-hours", type=float, required=True); p.add_argument("--condition"); p.add_argument("--out-dir", type=Path, required=True)
     p = sub.add_parser("inspect-gse137554"); p.add_argument("--annotation", type=Path, required=True); p.add_argument("--h5", type=Path, required=True)
     args = ap.parse_args()
     if args.cmd == "prepare": print(json.dumps(prepare_gse92872(args.expression, args.out, args.genes), indent=2))
@@ -387,6 +391,19 @@ def main():
         from .tcr import analyze_10x_repertoire
         print(json.dumps(analyze_10x_repertoire(args.contigs, args.out_dir), indent=2))
     elif args.cmd == "predict": predict(args.model, args.condition, parse_perturbations(args.perturb), args.out_dir, args.subtype)
+    elif args.cmd == "generate-multimodal-example":
+        from .multimodal import generate_simulated_example
+        print(json.dumps(generate_simulated_example(args.out_dir, args.cells, args.seed), indent=2))
+    elif args.cmd == "validate-multimodal":
+        from .multimodal import validate_dataset
+        print(json.dumps(validate_dataset(args.dataset), indent=2))
+    elif args.cmd == "train-multimodal":
+        from .multimodal import train_multimodal
+        print(json.dumps(train_multimodal(args.dataset, args.out, args.latent_dim, args.ridge), indent=2))
+    elif args.cmd == "predict-multimodal":
+        from .multimodal import predict_multimodal
+        print(json.dumps(predict_multimodal(args.model, args.dataset, args.cell_id,
+            args.perturbation, args.strength, args.time_hours, args.out_dir, args.condition), indent=2))
     else: print(json.dumps(inspect_gse137554(args.annotation, args.h5), indent=2))
 
 

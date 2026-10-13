@@ -1,5 +1,61 @@
 # Virtual T Cell
 
+## Multimodal Virtual T Cell (v0.9)
+
+Version 0.9 adds a runnable, missing-modality-aware baseline for jointly using
+single-cell RNA, ATAC, CITE-seq/protein, TCR features, perturbations, and time.
+It is separate from the older cross-cohort evidence weighting: each modality
+has its own SVD encoder, observed/missing masks are retained, the latent views
+are fused, and conditional ridge decoders predict all trained modalities.
+
+Run the complete example (Linux/macOS; replace `\` with backticks or use one
+line per command in PowerShell):
+
+```bash
+python -m pip install -e .
+virtual-t-cell generate-multimodal-example --out-dir examples/multimodal_synthetic
+virtual-t-cell validate-multimodal --dataset examples/multimodal_synthetic
+virtual-t-cell train-multimodal \
+  --dataset examples/multimodal_synthetic \
+  --out models/multimodal_demo.npz \
+  --latent-dim 4
+virtual-t-cell predict-multimodal \
+  --model models/multimodal_demo.npz \
+  --dataset examples/multimodal_synthetic \
+  --cell-id sim_cell_0000 \
+  --perturbation LCK \
+  --strength 0.8 \
+  --time-hours 24 \
+  --out-dir run_output/multimodal_LCK_24h
+```
+
+The four output tables are `rna_predictions.csv`, `atac_predictions.csv`,
+`protein_predictions.csv`, and `tcr_predictions.csv`, accompanied by provenance
+and counterfactual settings in `prediction_metadata.json`. TCR predictions are
+numeric repertoire/sequence features, **not generated CDR3 sequences**.
+
+The input contract is documented in
+[`docs/MULTIMODAL_SCHEMA.md`](docs/MULTIMODAL_SCHEMA.md). A dataset directory
+contains a JSON manifest and a compressed NPZ archive, so converters can be
+built from MuData/AnnData or 10x matrices while inference retains the project's
+small NumPy/Pandas dependency footprint. Install `.[multimodal]` only for ETL
+workflows that require AnnData/MuData.
+
+### Data boundary
+
+- `examples/multimodal_synthetic` is deterministic **simulated test data**. Its
+  gene/protein names aid readability, but no values come from a biological
+  specimen or public cohort.
+- The existing GSE/Zenodo/VDJdb-derived artifacts remain real public-data
+  summaries with the limitations documented below and in
+  `THIRD_PARTY_DATA.md`; they are not silently mixed into the synthetic demo.
+- The v0.9 learner can train on real, simulated, or explicitly mixed data, but
+  requires this provenance in the manifest. Real evaluation should split by
+  donor and preferably held-out perturbation.
+- This linear reference model demonstrates interfaces and end-to-end behavior.
+  It is not a clinical model, a causal guarantee, or a substitute for held-out
+  perturbation, flow-cytometry, cytokine, chromatin, and repertoire validation.
+
 ## 可视化界面
 
 Windows 用户可以双击 `run_visual_app.bat`。首次运行会安装界面依赖，随后浏览器自动打开。界面支持选择 30 种 T 细胞亚型、实验状态、敲除/抑制基因和扰动强度，并显示：
