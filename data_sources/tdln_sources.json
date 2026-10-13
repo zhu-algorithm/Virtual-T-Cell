@@ -1,0 +1,12 @@
+{
+  "schema_version": "tdln-sources-v1",
+  "boundary": "Accessions are independent public cohorts unless explicitly marked paired; processed source files are not redistributed.",
+  "sources": [
+    {"accession": "GSE316782", "modalities": ["scRNA-seq", "CITE-seq", "IMC"], "role": "lymph-node cell composition and protein-state calibration"},
+    {"accession": "GSE212797", "modalities": ["scRNA-seq", "CITE-seq", "TCR-seq"], "role": "TCR repertoire calibration"},
+    {"accession": "GSE239514", "modalities": ["bulk RNA-seq"], "role": "TDLN gene-program range and between-sample variation"},
+    {"accession": "GSE158399", "modalities": ["scRNA-seq"], "role": "paired primary, metastasis-positive LN and metastasis-negative LN evidence"},
+    {"accession": "GSE248214", "modalities": ["scRNA-seq"], "role": "sentinel-LN lymphatic endothelial evidence"},
+    {"accession": "GSE167036", "modalities": ["scRNA-seq", "TCR-seq"], "role": "breast lymph-node metastasis external evidence"}
+  ]
+}

@@ -1,5 +1,33 @@
 # Virtual T Cell
 
+## v0.9：公共多组学 TDLN 虚拟器官
+
+仓库现在同时提供细胞级 Virtual T Cell 与器官级肿瘤引流淋巴结（TDLN）模型。
+TDLN 校准文件整合 GSE316782 的 32,509 个淋巴结细胞和 126 个 CITE-seq
+蛋白、GSE212797 的 15,421 条 productive TCR contig，以及 GSE239514 的
+25 个 TDLN bulk RNA 样本。它初始化 19 类细胞、6 个空间区和 8 条细胞通讯轴。
+
+```bash
+virtual-t-cell simulate-tdln \
+  --model models/tdln_public_calibration_v1.json \
+  --days 21 --tumor-burden 0.45 --therapy anti_PD1 --metastasis \
+  --out-dir outputs/tdln_anti_pd1
+```
+
+从下载的公开 GEO 表重建校准：
+
+```bash
+virtual-t-cell download-tdln --out-dir data/tdln_raw
+virtual-t-cell prepare-tdln \
+  --raw-dir data/tdln_raw \
+  --out models/tdln_public_calibration_v1.json
+```
+
+校准模型记录完整 accession 来源、患者留一组成验证、蛋白均值、TCR 多样性和
+bulk RNA 程序范围。day 0 的免疫组成与蛋白活化来自真实公共队列；结构细胞小比例
+先验、空间归巢和后续动力学仍是机制假设，不是临床数字孪生。来源清单位于
+`data_sources/tdln_sources.json`。
+
 ## 可视化界面
 
 Windows 用户可以双击 `run_visual_app.bat`。首次运行会安装界面依赖，随后浏览器自动打开。界面支持选择 30 种 T 细胞亚型、实验状态、敲除/抑制基因和扰动强度，并显示：

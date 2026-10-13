@@ -355,6 +355,9 @@ def main():
     p = sub.add_parser("analyze-tcr"); p.add_argument("--contigs", type=Path, required=True); p.add_argument("--out-dir", type=Path, required=True)
     p = sub.add_parser("predict"); p.add_argument("--model", type=Path, required=True); p.add_argument("--condition", required=True); p.add_argument("--subtype"); p.add_argument("--perturb", nargs="+", required=True); p.add_argument("--out-dir", type=Path, required=True)
     p = sub.add_parser("inspect-gse137554"); p.add_argument("--annotation", type=Path, required=True); p.add_argument("--h5", type=Path, required=True)
+    p = sub.add_parser("prepare-tdln", help="calibrate a TDLN organ model from downloaded GEO tables"); p.add_argument("--raw-dir", type=Path, required=True); p.add_argument("--out", type=Path, required=True)
+    p = sub.add_parser("simulate-tdln", help="simulate the public-data-calibrated TDLN virtual organ"); p.add_argument("--model", type=Path, required=True); p.add_argument("--out-dir", type=Path, required=True); p.add_argument("--days", type=int, default=14); p.add_argument("--tumor-burden", type=float, default=.35); p.add_argument("--therapy", choices=["none", "anti_PD1", "tumor_radiation"], default="none"); p.add_argument("--metastasis", action="store_true"); p.add_argument("--seed", type=int, default=13)
+    p = sub.add_parser("download-tdln", help="download and checksum public GEO files used by TDLN calibration"); p.add_argument("--out-dir", type=Path, required=True)
     args = ap.parse_args()
     if args.cmd == "prepare": print(json.dumps(prepare_gse92872(args.expression, args.out, args.genes), indent=2))
     elif args.cmd == "train": print(json.dumps(train_model(args.prepared, args.out, args.shrinkage), indent=2))
@@ -387,6 +390,18 @@ def main():
         from .tcr import analyze_10x_repertoire
         print(json.dumps(analyze_10x_repertoire(args.contigs, args.out_dir), indent=2))
     elif args.cmd == "predict": predict(args.model, args.condition, parse_perturbations(args.perturb), args.out_dir, args.subtype)
+    elif args.cmd == "prepare-tdln":
+        from .tdln.calibrate import calibrate
+        result = calibrate(args.raw_dir, args.out)
+        print(json.dumps({"output": str(args.out), "cohort": result["cohort"], "validation": result["validation"]}, indent=2))
+    elif args.cmd == "simulate-tdln":
+        from .tdln.model import run_simulation
+        print(json.dumps(run_simulation(args.out_dir, days=args.days, tumor_burden=args.tumor_burden,
+            therapy=args.therapy, metastasis=args.metastasis, seed=args.seed,
+            calibration_model=args.model), indent=2))
+    elif args.cmd == "download-tdln":
+        from .tdln.download import download_tdln
+        print(json.dumps(download_tdln(args.out_dir), indent=2))
     else: print(json.dumps(inspect_gse137554(args.annotation, args.h5), indent=2))
 
 
