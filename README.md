@@ -1,5 +1,25 @@
 # Virtual T Cell
 
+## v0.10：完整肿瘤免疫循环
+
+新增从 T 细胞生成到肿瘤杀伤的可执行闭环：骨髓输出 → 胸腺 DN/DP/CD8-SP
+成熟与正/负选择 → 抗原特异性初始克隆 → 肿瘤抗原释放与 DC 摄取 → TDLN
+启动及克隆扩增 → PBMC/血液迁移 → 肿瘤浸润 → TCR–pMHC-I 特异识别 →
+肿瘤杀伤 → 抗原反馈。识别同时受 HLA 匹配、TCR 亲和力、抗原免疫原性和肿瘤
+MHC-I 控制；支持 PD-1 阻断、肿瘤放疗及联合治疗。
+
+```bash
+virtual-t-cell simulate-immune-cycle \
+  --days 42 --tumor-burden 0.55 \
+  --antigen-immunogenicity 0.7 --hla-match 0.85 \
+  --tcr-affinity 0.7 --tumor-mhc-i 0.75 \
+  --therapy anti_PD1 --out-dir outputs/immune_cycle
+```
+
+输出逐日器官/细胞状态、13 个环节的瞬时与累计通量、肿瘤负荷和累计杀伤。
+当前抗原、HLA 与 TCR 是 0–1 的机制分数；下一阶段应接入真实 HLA 分型、肿瘤
+突变/新抗原、免疫肽组和 TCR–pMHC 实验数据，不能将当前结果用作患者疗效预测。
+
 ## v0.9：公共多组学 TDLN 虚拟器官
 
 仓库现在同时提供细胞级 Virtual T Cell 与器官级肿瘤引流淋巴结（TDLN）模型。
