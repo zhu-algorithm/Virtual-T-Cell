@@ -8,8 +8,8 @@
   },
   "tests": {
     "command": "python3 -m unittest discover -s tests",
-    "count": 82,
-    "seconds": 1.638,
+    "count": 88,
+    "seconds": 2.138,
     "result": "passed",
     "skipped": 0
   },
@@ -66,7 +66,21 @@
   "limitations": [
     "No AGI demonstration.",
     "No real liver/spleen batch was provided in this session.",
-    "No sequencing instrument or continuous background server was started.",
-    "Automatic promotion uses POSIX locks (Linux/macOS/WSL)."
-  ]
+    "No sequencing instrument or continuous background server was started."
+  ],
+  "platform_lock_implementation": {
+    "posix": "fcntl.flock",
+    "windows": "msvcrt.locking",
+    "portability_checks": "GitHub CI organ-packages jobs verify actual platform execution."
+  },
+  "organ_distributions": {
+    "organs": [
+      "liver",
+      "spleen"
+    ],
+    "python": "3.12",
+    "evidence": "synthetic",
+    "dependency_installation": "isolated non-editable environment",
+    "real_organ_weights_included": false
+  }
 }

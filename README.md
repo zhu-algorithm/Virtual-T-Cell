@@ -18,6 +18,19 @@ virtual-t-cell-learn demo --out-dir run_output/learning_demo
 
 `demo` 全部使用明确标注的合成数据；现有 `virtual-t-cell` 命令和可视化界面保持各自用途。
 
+### 肝脏、脾脏独立运行包
+
+```bash
+python scripts/build_organ_packages.py
+```
+
+生成 `virtual_liver_learning_starter.zip` 与 `virtual_spleen_learning_starter.zip`。
+每包包含完整源码、独立器官配置、合成示例、固定 Python 3.12 依赖及启动脚本。
+解压后运行 `python run.py`，结果见 `output/demo/report.html`。首次安装需要联网获取依赖；
+不需要 GPU、API key 或另一个器官包。CSV/H5AD 真实输入接口与演示数据分开保存。
+压缩包包含的示例不代表真实肝脏或脾脏模型已经训练完成。
+跨平台独立安装验证见 CI 的 `organ-packages` 任务；构建说明见 [distribution/README.md](distribution/README.md)。
+
 ## 可视化界面
 
 Windows 用户可以双击 `run_visual_app.bat`。首次运行会安装界面依赖，随后浏览器自动打开。界面支持选择 30 种 T 细胞亚型、实验状态、敲除/抑制基因和扰动强度，并显示：

@@ -1,0 +1,23 @@
+# Optional H5AD environment, locked for CPython 3.12.
+-r requirements.txt
+anndata==0.13.4
+annotated-types==0.8.0
+array-api-compat==1.16.0
+donfig==0.8.1.post1
+google-crc32c==1.9.0
+h5py==3.16.0
+legacy-api-wrap==1.5
+msgspec==0.22.0
+natsort==8.4.0
+numcodecs==0.17.1
+pydantic==2.13.4
+pydantic-core==2.46.4
+pydantic-settings==2.15.0
+python-dotenv==1.2.2
+pyyaml==6.0.3
+scipy==1.18.1
+scverse-misc==0.1.8
+session-info2==0.4.2
+typing-extensions==4.16.0
+typing-inspection==0.4.3
+zarr==3.4.2

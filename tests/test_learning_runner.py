@@ -1,8 +1,11 @@
 """End-to-end response-cycle tests using synthetic software fixtures only."""
 from copy import deepcopy
 import json
+import multiprocessing
+import os
 from pathlib import Path
 import tempfile
+import time
 import unittest
 from unittest.mock import patch
 
@@ -11,7 +14,7 @@ import numpy as np
 from virtual_t_cell.learning.belief import BeliefState
 from virtual_t_cell.learning.continual import propose_update
 from virtual_t_cell.learning.evidence import EvidenceStore
-from virtual_t_cell.learning.runner import run_learning_cycle
+from virtual_t_cell.learning.runner import _model_lock, run_learning_cycle
 from virtual_t_cell.learning.schema import write_jsonl
 from virtual_t_cell.learning.world_model import BayesianWorldModel
 
@@ -33,6 +36,39 @@ def records(prefix, inputs, *, shift=0.0, evidence_type="synthetic"):
                 "measurement_sd": {"response": 0.05},
             })
     return rows
+
+
+def _hold_model_lock_in_process(model_path, connection):
+    """Top-level spawn target, exercising the actual platform's lock backend."""
+    try:
+        with _model_lock(Path(model_path)):
+            connection.send("locked")
+            command = connection.recv()
+            if command == "abort":
+                # Deliberately bypass Python finally blocks: the process handle
+                # lifecycle must not leave a stale persistent-file lock.
+                os._exit(23)
+    except BaseException as error:
+        try:
+            connection.send({"error": repr(error)})
+        finally:
+            raise
+    finally:
+        connection.close()
+
+
+def _close_lock_holder(process, connection):
+    if process.is_alive():
+        try:
+            connection.send("release")
+        except (OSError, EOFError):
+            pass
+        process.join(timeout=5)
+    if process.is_alive():
+        process.terminate()
+        process.join(timeout=5)
+    connection.close()
+    process.close()
 
 
 class LearningCycleTests(unittest.TestCase):
@@ -66,6 +102,21 @@ class LearningCycleTests(unittest.TestCase):
                         allow_synthetic=True, replay_path=self.replay_path if seed else None)
         settings.update(options)
         return run_learning_cycle(**settings)
+
+    def lock_holder(self):
+        # Always use spawn, even on Linux, so these tests use the same import and
+        # process isolation behavior as native Windows CI. No fcntl is imported
+        # by the test; the runner must select its real platform backend.
+        context = multiprocessing.get_context("spawn")
+        connection, child = context.Pipe()
+        process = context.Process(target=_hold_model_lock_in_process,
+                                  args=(str(self.model_path), child), daemon=True)
+        process.start()
+        child.close()
+        self.addCleanup(_close_lock_holder, process, connection)
+        self.assertTrue(connection.poll(15), "lock holder did not become ready")
+        self.assertEqual(connection.recv(), "locked")
+        return process, connection
 
     def test_accepted_cycle_promotes_and_refreshes_belief_then_has_no_pending_labels(self):
         self.append(self.new)
@@ -209,7 +260,6 @@ class LearningCycleTests(unittest.TestCase):
     def test_belief_write_failure_rolls_model_back_and_preserves_candidate(self):
         self.append(self.new)
         old_belief = self.belief_path.read_bytes()
-        import os
         replace = os.replace
         failed = False
 
@@ -234,12 +284,47 @@ class LearningCycleTests(unittest.TestCase):
         self.assertEqual(recovered["status"], "promoted")
 
     def test_parallel_cycle_lock_prevents_a_second_writer(self):
-        import fcntl
+        process, connection = self.lock_holder()
         lock_path = Path(str(self.model_path) + ".learning.lock")
-        with lock_path.open("a+b") as handle:
-            fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-            with self.assertRaisesRegex(BlockingIOError, "another learning cycle"):
-                self.cycle()
+        started = time.monotonic()
+        with self.assertRaisesRegex(BlockingIOError, "another learning cycle"):
+            self.cycle()
+        self.assertLess(time.monotonic() - started, 3.0, "lock contention must not use a blocking retry mode")
+        self.assertEqual(self.model_path.read_bytes(), self.original_bytes)
+        connection.send("release")
+        process.join(timeout=15)
+        self.assertFalse(process.is_alive(), "lock holder did not exit after release")
+        self.assertEqual(process.exitcode, 0)
+        self.assertTrue(lock_path.is_file(), "persistent lock files must not be unlinked")
+        with _model_lock(self.model_path):
+            pass
+
+    def test_model_lock_is_released_when_body_raises(self):
+        with self.assertRaisesRegex(RuntimeError, "fixture failure"):
+            with _model_lock(self.model_path):
+                raise RuntimeError("fixture failure")
+        with _model_lock(self.model_path):
+            pass
+        self.assertEqual(self.model_path.read_bytes(), self.original_bytes)
+
+    def test_abrupt_process_exit_does_not_leave_a_stale_lock(self):
+        process, connection = self.lock_holder()
+        connection.send("abort")
+        process.join(timeout=15)
+        self.assertFalse(process.is_alive(), "aborted lock holder did not exit")
+        self.assertEqual(process.exitcode, 23)
+        # Some filesystems can finish releasing process locks just after process
+        # termination is observed.  Bound the recovery check, never delete the
+        # lock file to force acquisition.
+        deadline = time.monotonic() + 5.0
+        while True:
+            try:
+                with _model_lock(self.model_path):
+                    break
+            except BlockingIOError:
+                if time.monotonic() >= deadline:
+                    self.fail("process exit left an unreleased model lock")
+                time.sleep(0.02)
         self.assertEqual(self.model_path.read_bytes(), self.original_bytes)
 
     def test_training_record_fingerprints_prevent_rewritten_replay(self):

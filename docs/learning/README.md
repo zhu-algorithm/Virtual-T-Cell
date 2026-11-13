@@ -164,7 +164,7 @@ virtual-t-cell-learn sync-inbox \
 
 `replay_path` 用来首次登记当前模型完整的原始训练记录。之后已接受的新证据保存在 journal，形成后续回放集。`promote:false` 可让循环只保存候选与 gate。该进程需要用户在自己的运行环境中启动；本次开发没有接通测序设备或长期后台服务器。
 
-本版模型升级使用 POSIX 文件锁，支持 Linux/macOS/WSL。原生 Windows 环境可先在 WSL 运行完整示例和自动升级流程；基础导入、训练接口不需要 POSIX 锁。模型与 belief sidecar 各自原子替换，读取时可核对同一 `model_id`；升级写入失败会恢复旧模型。
+模型升级使用平台文件锁：Linux/macOS 使用 `fcntl.flock`，原生 Windows 使用 `msvcrt` 非阻塞字节范围锁。CI 的 `organ-packages` 任务实际检查三个系统的独立安装、运行和真实跨进程互斥。模型与 belief sidecar 各自原子替换，读取时可核对同一 `model_id`；升级写入失败会恢复旧模型。
 
 ## 真实响应记录、训练与升级
 

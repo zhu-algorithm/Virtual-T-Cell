@@ -1,0 +1,8 @@
+# Locked CPU environment for CPython 3.12, 64 bit.
+numpy==2.3.5
+pandas==3.1.1
+python-dateutil==4.0.0
+tzdata==2026.6
+setuptools==84.2.1
+wheel==0.48.0
+packaging==26.3

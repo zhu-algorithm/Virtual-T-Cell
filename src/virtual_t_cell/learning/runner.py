@@ -10,6 +10,7 @@ from collections import Counter
 from contextlib import contextmanager
 from copy import deepcopy
 from datetime import datetime, timezone
+import errno
 import hashlib
 import json
 import math
@@ -91,27 +92,54 @@ def _copy_to_temporary(source: Path, destination: Path) -> Path:
 
 @contextmanager
 def _model_lock(model_path: Path):
-    """POSIX advisory lock shared by all runner cycles for this active path.
+    """Nonblocking process lock shared by cycles for this active model path.
 
     The persistent lock file is deliberately not unlinked: unlinking it could
-    let different callers lock different inodes.  A process exit releases flock.
+    let different callers lock different files.  POSIX uses ``flock``; native
+    Windows uses ``msvcrt.locking`` on byte zero.  Both are held until this
+    context exits, and the OS releases the handle if its process terminates.
     Writers outside this runner must also honor this lock; a content-hash check
     immediately before replacement detects other changes during fitting.
     """
-    try:
-        import fcntl
-    except ImportError as error:
-        raise ImportError("the learning runner requires POSIX file locking on this platform") from error
     lock_path = model_path.with_name(model_path.name + ".learning.lock")
-    with lock_path.open("a+b") as handle:
+    # No byte needs to be written: Windows permits locking beyond EOF.  Avoiding
+    # writes also avoids touching a byte another process might already hold.
+    # https://docs.python.org/3/library/msvcrt.html#msvcrt.locking
+    with lock_path.open("a+b", buffering=0) as handle:
+        if os.name == "nt":
+            import msvcrt
+
+            def operate(acquire: bool) -> None:
+                # locking() starts at the current descriptor position; every
+                # acquisition and release must refer to the same byte range.
+                handle.seek(0)
+                mode = msvcrt.LK_NBLCK if acquire else msvcrt.LK_UNLCK
+                msvcrt.locking(handle.fileno(), mode, 1)
+        else:
+            try:
+                import fcntl
+            except ImportError as error:
+                raise ImportError("model locking requires Windows msvcrt or POSIX fcntl") from error
+
+            def operate(acquire: bool) -> None:
+                mode = fcntl.LOCK_EX | fcntl.LOCK_NB if acquire else fcntl.LOCK_UN
+                fcntl.flock(handle.fileno(), mode)
+
         try:
-            fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except BlockingIOError as error:
-            raise BlockingIOError("another learning cycle is using this active model") from error
+            operate(True)
+        except OSError as error:
+            # The Microsoft CRT reports a locking violation as EACCES.  POSIX
+            # flock uses EAGAIN/EWOULDBLOCK (and may use EACCES).  Preserve other
+            # I/O errors rather than misreporting them as ordinary contention.
+            if error.errno in {errno.EACCES, errno.EAGAIN, errno.EWOULDBLOCK}:
+                raise BlockingIOError(errno.EWOULDBLOCK,
+                                      "another learning cycle is using this active model",
+                                      str(lock_path)) from error
+            raise
         try:
             yield
         finally:
-            fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+            operate(False)
 
 
 def _eligible_records(records: list[dict], *, model_kind: str, origin: str):
