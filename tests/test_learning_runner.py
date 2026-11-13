@@ -265,7 +265,9 @@ class LearningCycleTests(unittest.TestCase):
 
         def sidecar_failure(source, destination):
             nonlocal failed
-            if Path(destination) == self.belief_path and not failed:
+            # macOS may expose a temporary path through /var while the runner
+            # resolves the same file under /private/var.
+            if Path(destination).resolve() == self.belief_path.resolve() and not failed:
                 failed = True
                 raise OSError("synthetic sidecar write failure")
             return replace(source, destination)

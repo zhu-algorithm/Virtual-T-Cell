@@ -172,7 +172,9 @@ def _save_candidate(model: BayesianWorldModel, path: Path) -> None:
     temporary = _temporary_file(path)
     try:
         model.save(temporary)
-        with temporary.open("rb") as handle:
+        # Windows' CRT commit requires a writable descriptor for fsync.
+        with temporary.open("r+b") as handle:
+            handle.flush()
             os.fsync(handle.fileno())
         os.replace(temporary, path)
     finally:
