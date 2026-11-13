@@ -1,5 +1,23 @@
 # Virtual T Cell
 
+## 持续学习研究核心：肝脏与脾脏数据入口
+
+新增独立命令 `virtual-t-cell-learn`，将可追溯的证据记录、概率响应模型、实验信息价值规划与模型升级评估接入现有项目。
+
+- 单细胞原始计数按组织、物种、供者、样本、细胞类型和条件入库；支持重复批次去重与当前 pseudobulk 状态快照。
+- 肝脏和脾脏的观察图谱更新细胞状态统计；有明确来源与对照的干预结果才训练响应模型。
+- 响应模型采用固定随机非线性特征与 Bayesian regression；新数据训练时回放旧证据，独立验证整体、组织及输出的退化，并检查物种覆盖后才能升级。
+- 实验规划使用预算约束的相关单步 Knowledge Gradient；默认拒绝缺少训练覆盖的组织与物种。
+
+这是**可运行的研究原型**。其训练结果、数据来源与限制见[使用指南](docs/learning/README.md)及[参考数据评估](docs/learning/reference_benchmark_summary.json)。它不代表已实现 AGI，也不代表已有肝脏或脾脏真实数据训练完成的基础模型。
+
+```bash
+python -m pip install -e .
+virtual-t-cell-learn demo --out-dir run_output/learning_demo
+```
+
+`demo` 全部使用明确标注的合成数据；现有 `virtual-t-cell` 命令和可视化界面保持各自用途。
+
 ## 可视化界面
 
 Windows 用户可以双击 `run_visual_app.bat`。首次运行会安装界面依赖，随后浏览器自动打开。界面支持选择 30 种 T 细胞亚型、实验状态、敲除/抑制基因和扰动强度，并显示：

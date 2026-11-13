@@ -1,0 +1,72 @@
+{
+  "python": "3.12.14",
+  "dependencies": {
+    "numpy": "2.3.5",
+    "pandas": "3.1.1",
+    "anndata": "0.13.4",
+    "h5py": "3.16.0"
+  },
+  "tests": {
+    "command": "python3 -m unittest discover -s tests",
+    "count": 82,
+    "seconds": 1.638,
+    "result": "passed",
+    "skipped": 0
+  },
+  "compileall": {
+    "command": "python3 -m compileall -q src app.py scripts/benchmark_learning_core.py",
+    "result": "passed"
+  },
+  "synthetic_demo": {
+    "source": "synthetic_numerical_fixture_v1",
+    "real_biological_validation": false,
+    "atlas_cells": 16,
+    "atlas_organs": {
+      "liver": 8,
+      "spleen": 8
+    },
+    "atlas_batches": 2,
+    "first_learning_cycle": "promoted",
+    "second_learning_cycle": "no_new_evidence",
+    "update_gate": "accept",
+    "held_out_rmse": 0.07463019613551641,
+    "mean_baseline_rmse": 1.2258488955447784,
+    "planning_decision": "stop"
+  },
+  "h5ad": {
+    "optional_dependencies_installed": true,
+    "explicit_raw_counts_layer_roundtrip_test": "passed",
+    "real_liver_spleen_data_used": false
+  },
+  "public_reference": {
+    "records": 1536,
+    "targets": 512,
+    "unique_feature_vectors": 7,
+    "gate": "reject",
+    "gate_reasons": [
+      "output_prediction_regression:PDCD1",
+      "organ_output_gate_failed:blood:PDCD1"
+    ],
+    "test_rmse": 0.7241632029163788,
+    "mean_baseline_rmse": 0.7273195406874023,
+    "linear_baseline_rmse": 0.7240116294575459,
+    "zero_baseline_rmse": 0.7527128930956432,
+    "test_90_coverage": 0.8940972222222222,
+    "test_domain": {
+      "in_domain_records": 189,
+      "extrapolated_records": 3,
+      "in_domain_fraction": 0.984375,
+      "domain_reasons": {
+        "feature_outside_training_range:target_in_tcr_signaling": 3
+      },
+      "unscored_outcomes": {}
+    },
+    "output": "run_output/reference_benchmark/benchmark.json"
+  },
+  "limitations": [
+    "No AGI demonstration.",
+    "No real liver/spleen batch was provided in this session.",
+    "No sequencing instrument or continuous background server was started.",
+    "Automatic promotion uses POSIX locks (Linux/macOS/WSL)."
+  ]
+}
