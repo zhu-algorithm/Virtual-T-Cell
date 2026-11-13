@@ -1,0 +1,25 @@
+{
+  "records": 1536,
+  "targets": 512,
+  "unique_feature_vectors": 7,
+  "gate": "reject",
+  "gate_reasons": [
+    "output_prediction_regression:PDCD1",
+    "organ_output_gate_failed:blood:PDCD1"
+  ],
+  "test_rmse": 0.7241632029163788,
+  "mean_baseline_rmse": 0.7273195406874023,
+  "linear_baseline_rmse": 0.7240116294575459,
+  "zero_baseline_rmse": 0.7527128930956432,
+  "test_90_coverage": 0.8940972222222222,
+  "test_domain": {
+    "in_domain_records": 189,
+    "extrapolated_records": 3,
+    "in_domain_fraction": 0.984375,
+    "domain_reasons": {
+      "feature_outside_training_range:target_in_tcr_signaling": 3
+    },
+    "unscored_outcomes": {}
+  },
+  "output": "run_output/reference_benchmark/benchmark.json"
+}

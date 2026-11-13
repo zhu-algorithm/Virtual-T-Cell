@@ -22,3 +22,48 @@ jobs:
         run: python -m compileall -q src app.py
       - name: Test
         run: python -m unittest discover -s tests -v
+
+  atlas-input:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install atlas dependencies
+        run: python -m pip install -e '.[atlas]'
+      - name: Verify raw-count H5AD and batch ingestion
+        run: python -m unittest discover -s tests -p 'test_learning_data.py' -v
+
+  organ-packages:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install build dependencies
+        run: python -m pip install -e .
+      - name: Verify real process locks and update recovery
+        run: python -m unittest discover -s tests -p 'test_learning_runner.py' -v
+      - name: Build independent liver and spleen distributions
+        run: python scripts/build_organ_packages.py
+      - name: Cold install and run both ZIPs outside the checkout
+        run: python scripts/verify_organ_packages.py --h5ad
+      - name: Preserve portability verification
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: organ-package-verification-${{ matrix.os }}
+          path: run_output/organ_package_verification
+      - name: Preserve independently runnable source packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: organ-source-packages-${{ matrix.os }}
+          path: run_output/organ_packages/*.zip

@@ -13,3 +13,7 @@ data/
 *.mtx
 artifacts/gse92872_prepared.npz
 workcheck/
+run_output/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
